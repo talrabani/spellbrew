@@ -1,0 +1,35 @@
+:root {
+  --app-width: 360px;
+}
+
+#root {
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  overflow-x: hidden;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-sizing: border-box;
+}
+
+.App {
+  width: var(--app-width);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 1rem;
+  box-sizing: border-box;
+  font-family: 'Arial', 'Noto Sans Hebrew', 'David', sans-serif;
+}
+
+/* Mobile-first responsive design */
+@media (max-width: 480px) {
+  .App {
+    padding: 0.75rem;
+  }
+}

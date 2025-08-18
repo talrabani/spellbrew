@@ -1,0 +1,56 @@
+.word-display-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+/* Word Display */
+.word-display {
+  font-size: 3.5rem;
+  font-weight: bold;
+  color: #2d3748;
+  margin: 1.5rem 0;
+  direction: rtl;
+  animation: wordFlash 0.5s ease-in;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.instruction {
+  font-size: 1rem;
+  color: #718096;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+/* Animations */
+@keyframes wordFlash {
+  0% { opacity: 0; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .word-display {
+    font-size: 2.8rem;
+    margin: 1rem 0;
+  }
+  
+  .instruction {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .word-display {
+    font-size: 2.4rem;
+    margin: 0.8rem 0;
+  }
+  
+  .instruction {
+    font-size: 0.85rem;
+  }
+}

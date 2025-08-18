@@ -1,0 +1,103 @@
+.game-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.back-button {
+  background: rgba(0, 0, 0, 0.1);
+  border: none;
+  color: #4a5568;
+  font-size: 1.3rem;
+  font-weight: bold;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.back-button:hover {
+  background: rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.back-button:active {
+  transform: translateY(0);
+}
+
+.header-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+
+/* Header Info */
+.score {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #4a5568;
+}
+
+.score.correct,
+.score.incorrect {
+  color: white;
+}
+
+.progress {
+  font-size: 0.85rem;
+  color: #718096;
+}
+
+.progress.correct,
+.progress.incorrect {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Mobile Responsive Design */
+@media (max-width: 480px) {
+  .game-header {
+    margin-bottom: 1rem;
+  }
+  
+  .back-button {
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
+  }
+  
+  .score {
+    font-size: 1rem;
+  }
+  
+  .progress {
+    font-size: 0.8rem;
+  }
+  
+  .header-info {
+    gap: 0.3rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .back-button {
+    width: 30px;
+    height: 30px;
+    font-size: 1.1rem;
+  }
+  
+  .score {
+    font-size: 0.9rem;
+  }
+  
+  .progress {
+    font-size: 0.75rem;
+  }
+}

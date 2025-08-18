@@ -1,0 +1,230 @@
+/* User Bar Component */
+.user-bar {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.user-bar.loading {
+  justify-content: center;
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+/* Player Bar (Logged In) */
+.player-bar {
+  background: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: var(--app-width);
+  min-width: var(--app-width);
+  animation: fadeIn 0.5s ease-in;
+  box-sizing: border-box;
+}
+
+.profile-picture-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  border: 2px solid #cbd5e0;
+  flex-shrink: 0;
+  /* Empty placeholder as requested */
+}
+
+.player-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.player-name {
+  font-weight: 700;
+  color: #4a5568;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-level {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.star-icon {
+  font-size: 1.2rem;
+  color: #f6e05e;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+}
+
+.level-text {
+  font-size: 0.8rem;
+  color: #718096;
+  font-weight: 500;
+}
+
+.logout-button {
+  background: none;
+  border: none;
+  color: #a0aec0;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.logout-button:hover {
+  background: rgba(160, 174, 192, 0.1);
+  color: #718096;
+}
+
+.logout-button:active {
+  transform: scale(0.95);
+}
+
+/* Auth Buttons (Not Logged In) */
+.auth-buttons {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  background: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.5s ease-in;
+  width: 100%;
+  max-width: var(--app-width);
+  min-width: var(--app-width);
+  justify-content: flex-end;
+  box-sizing: border-box;
+}
+
+.login-button,
+.signup-button {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  white-space: nowrap;
+}
+
+.login-button {
+  background: transparent;
+  color: #667eea;
+  border: 1px solid #667eea;
+}
+
+.login-button:hover {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.signup-button {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.signup-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.login-button:active,
+.signup-button:active {
+  transform: translateY(0);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+  .player-bar {
+    padding: 0.6rem 1.2rem;
+    gap: 0.8rem;
+  }
+
+  .auth-buttons {
+    padding: 0.6rem 1.2rem;
+  }
+
+  .profile-picture-placeholder {
+    width: 35px;
+    height: 35px;
+  }
+
+  .player-name {
+    font-size: 0.9rem;
+  }
+
+  .star-icon {
+    font-size: 1.1rem;
+  }
+
+  .level-text {
+    font-size: 0.75rem;
+  }
+
+  .login-button,
+  .signup-button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .player-bar {
+    padding: 0.5rem 1rem;
+    gap: 0.6rem;
+  }
+
+  .auth-buttons {
+    padding: 0.5rem 1rem;
+  }
+
+  .profile-picture-placeholder {
+    width: 30px;
+    height: 30px;
+  }
+
+  .player-name {
+    font-size: 0.85rem;
+  }
+
+  .star-icon {
+    font-size: 1rem;
+  }
+
+  .level-text {
+    font-size: 0.7rem;
+  }
+
+  .login-button,
+  .signup-button {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.8rem;
+  }
+}

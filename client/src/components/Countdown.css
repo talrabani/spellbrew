@@ -1,0 +1,27 @@
+/* Countdown */
+.countdown {
+  font-size: 3.5rem;
+  font-weight: bold;
+  color: #667eea;
+  animation: countdownPulse 1s ease-in-out infinite;
+  text-align: center;
+}
+
+/* Animations */
+@keyframes countdownPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .countdown {
+    font-size: 3rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .countdown {
+    font-size: 2.5rem;
+  }
+}

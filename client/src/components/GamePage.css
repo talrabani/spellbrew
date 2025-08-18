@@ -1,0 +1,243 @@
+/* Game Container */
+.game-container {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 450px;
+  min-width: 320px;
+  min-height: 350px;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.5s ease-in;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+/* Flash state backgrounds */
+.game-container.flash-correct {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+  animation: correctFlash 0.6s ease-in-out;
+}
+
+.game-container.flash-incorrect {
+  background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+  color: white;
+  animation: incorrectFlash 0.8s ease-in-out;
+}
+
+/* Flash Container */
+.flash-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.flash-icon {
+  font-size: 5rem;
+  font-weight: bold;
+  animation: iconPop 0.6s ease-in-out;
+}
+
+.correct-icon {
+  color: white;
+}
+
+.incorrect-icon {
+  color: white;
+}
+
+/* Input Container */
+.input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+/* Review Button */
+.review-button {
+  background: rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  color: #4a5568;
+  font-size: 0.9rem;
+  font-weight: bold;
+  padding: 0.6rem 1.2rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  white-space: nowrap;
+}
+
+.review-button:hover {
+  background: rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Review Mode */
+.game-container.review-mode {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+/* Review Header */
+.review-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.review-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: white;
+  flex: 1;
+  text-align: center;
+}
+
+.review-header .back-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 1.3rem;
+  font-weight: bold;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.review-header .back-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Review Container */
+.review-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 1.5rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes correctFlash {
+  0% { 
+    background: white;
+    transform: scale(1);
+  }
+  50% { 
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    transform: scale(1.05);
+  }
+  100% { 
+    background: white;
+    transform: scale(1);
+  }
+}
+
+@keyframes incorrectFlash {
+  0% { 
+    background: white;
+    transform: scale(1);
+  }
+  25% { 
+    background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+    transform: scale(1.05);
+  }
+  75% { 
+    background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+    transform: scale(1.02);
+  }
+  100% { 
+    background: white;
+    transform: scale(1);
+  }
+}
+
+@keyframes iconPop {
+  0% { 
+    opacity: 0;
+    transform: scale(0.5) rotate(-10deg);
+  }
+  50% { 
+    opacity: 1;
+    transform: scale(1.2) rotate(5deg);
+  }
+  100% { 
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Mobile Responsive Design */
+@media (max-width: 480px) {
+  .game-container {
+    padding: 1rem;
+    min-width: 280px;
+    min-height: 300px;
+  }
+  
+  .flash-icon {
+    font-size: 4rem;
+  }
+  
+  .review-title {
+    font-size: 1.1rem;
+  }
+  
+  .review-header .back-button {
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
+  }
+  
+  .review-button {
+    font-size: 0.8rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .game-container {
+    padding: 0.8rem;
+    min-width: 260px;
+    min-height: 280px;
+  }
+  
+  .flash-icon {
+    font-size: 3.5rem;
+  }
+  
+  .review-title {
+    font-size: 1rem;
+  }
+  
+  .review-header .back-button {
+    width: 30px;
+    height: 30px;
+    font-size: 1.1rem;
+  }
+}

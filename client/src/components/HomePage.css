@@ -1,0 +1,133 @@
+/* Home Page Container */
+.home-page {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* Main Menu */
+.main-menu {
+  background: white;
+  padding: 2rem 1.5rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: var(--app-width);
+  min-width: var(--app-width);
+  animation: fadeIn 0.5s ease-in;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.game-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #4a5568;
+  margin: 0 0 0.5rem 0;
+}
+
+.game-subtitle {
+  font-size: 1.1rem;
+  color: #718096;
+  margin: 0 0 1rem 0;
+  font-weight: 300;
+}
+
+.game-description {
+  font-size: 0.9rem;
+  color: #a0aec0;
+  margin: 0 0 2rem 0;
+  font-weight: 300;
+  line-height: 1.4;
+}
+
+/* Play Button */
+.play-button {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  border: none;
+  color: white;
+  font-size: 1.3rem;
+  font-weight: bold;
+  padding: 1rem 2.5rem;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  width: 100%;
+  max-width: 200px;
+}
+
+.play-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.play-button:active {
+  transform: translateY(0);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .home-page {
+    padding: 0.5rem;
+  }
+  
+  .main-menu {
+    padding: 1.5rem 1rem;
+  }
+  
+  .game-title {
+    font-size: 2rem;
+  }
+  
+  .game-subtitle {
+    font-size: 1rem;
+  }
+  
+  .game-description {
+    font-size: 0.85rem;
+  }
+  
+  .play-button {
+    font-size: 1.2rem;
+    padding: 0.9rem 2rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .home-page {
+    padding: 0.25rem;
+  }
+  
+  .main-menu {
+    padding: 1rem 0.8rem;
+  }
+  
+  .game-title {
+    font-size: 1.8rem;
+  }
+  
+  .game-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .game-description {
+    font-size: 0.8rem;
+  }
+  
+  .play-button {
+    font-size: 1.1rem;
+    padding: 0.8rem 1.8rem;
+  }
+}
