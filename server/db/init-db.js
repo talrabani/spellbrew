@@ -60,13 +60,12 @@ async function initDatabase() {
       // Insert vocabulary data
       for (const word of vocabData) {
         await pool.query(
-          'INSERT INTO vocabulary (hebrew, rank, english, transliteration, rank_estimated) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (hebrew) DO NOTHING',
+          'INSERT INTO vocabulary (hebrew, rank, english, transliteration) VALUES ($1, $2, $3, $4) ON CONFLICT (hebrew) DO NOTHING',
           [
             word.hebrew,
             word.rank,
             word.english,
-            word.transliteration,
-            word.rankEstimated || false
+            word.transliteration
           ]
         );
       }

@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS vocabulary (
     rank INTEGER,
     english TEXT[],
     transliteration TEXT[],
-    rank_estimated BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -25,36 +24,25 @@ CREATE TABLE IF NOT EXISTS users (
     last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Game scores table
-CREATE TABLE IF NOT EXISTS scores (
+-- User-specific vocabulary progress table
+-- Tracks how familiar a user is with each vocabulary word
+CREATE TABLE IF NOT EXISTS user_vocabulary_progress (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    score INTEGER NOT NULL,
-    words_attempted INTEGER NOT NULL,
-    words_correct INTEGER NOT NULL,
-    session_duration INTEGER NOT NULL, -- in milliseconds
-    words_per_minute INTEGER,
-    experience_gained INTEGER DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- User sessions table (for future use)
-CREATE TABLE IF NOT EXISTS sessions (
-    id SERIAL PRIMARY KEY,
-    session_id VARCHAR(255) UNIQUE NOT NULL,
-    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    user_agent TEXT,
-    ip_address INET,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    vocabulary_id INTEGER NOT NULL REFERENCES vocabulary(id) ON DELETE CASCADE,
+    learned_score INTEGER DEFAULT 0, -- overall mastery score for spaced repetition, 5 is fully learned
+    times_seen INTEGER DEFAULT 0,    -- how many times the user has seen this word
+    times_wrong INTEGER DEFAULT 0,   -- how many times the user got this word wrong
+    first_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_seen TIMESTAMP,
+    UNIQUE (user_id, vocabulary_id)
 );
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_vocabulary_rank ON vocabulary(rank);
 CREATE INDEX IF NOT EXISTS idx_vocabulary_hebrew ON vocabulary(hebrew);
-CREATE INDEX IF NOT EXISTS idx_scores_created_at ON scores(created_at);
-CREATE INDEX IF NOT EXISTS idx_scores_words_per_minute ON scores(words_per_minute);
-CREATE INDEX IF NOT EXISTS idx_scores_user_id ON scores(user_id);
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_uvp_user_id ON user_vocabulary_progress(user_id);
+CREATE INDEX IF NOT EXISTS idx_uvp_vocab_id ON user_vocabulary_progress(vocabulary_id);
+CREATE INDEX IF NOT EXISTS idx_uvp_learned_score ON user_vocabulary_progress(learned_score);

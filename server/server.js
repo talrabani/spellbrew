@@ -16,6 +16,34 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Helper: get or create a user_vocabulary_progress row
+async function upsertUserVocabProgress({ userId, vocabId, learnedDelta = 0, seenDelta = 0, wrongDelta = 0 }) {
+  // Try update existing, otherwise insert
+  const updated = await pool.query(
+    `UPDATE user_vocabulary_progress
+     SET learned_score = GREATEST(0, learned_score + $1),
+         times_seen = times_seen + $2,
+         times_wrong = times_wrong + $3,
+         last_seen = CURRENT_TIMESTAMP
+     WHERE user_id = $4 AND vocabulary_id = $5
+     RETURNING id`,
+    [learnedDelta, seenDelta, wrongDelta, userId, vocabId]
+  );
+  if (updated.rowCount > 0) return updated.rows[0];
+  const inserted = await pool.query(
+    `INSERT INTO user_vocabulary_progress (user_id, vocabulary_id, learned_score, times_seen, times_wrong, first_seen, last_seen)
+     VALUES ($1, $2, GREATEST(0,$3), $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+     ON CONFLICT (user_id, vocabulary_id) DO UPDATE SET
+       learned_score = GREATEST(0, user_vocabulary_progress.learned_score + EXCLUDED.learned_score),
+       times_seen = user_vocabulary_progress.times_seen + EXCLUDED.times_seen,
+       times_wrong = user_vocabulary_progress.times_wrong + EXCLUDED.times_wrong,
+       last_seen = CURRENT_TIMESTAMP
+     RETURNING id`,
+    [userId, vocabId, learnedDelta, seenDelta, wrongDelta]
+  );
+  return inserted.rows[0];
+}
+
 // Middleware to verify JWT token
 const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -191,6 +219,46 @@ app.get('/api/words', async (req, res) => {
   }
 });
 
+// Record progress for a batch of words the user just practiced
+// Body: { results: [{ hebrew: '...', correct: true|false }, ...] }
+app.post('/api/progress/batch', authenticateToken, async (req, res) => {
+  try {
+    const { results } = req.body;
+    if (!Array.isArray(results) || results.length === 0) {
+      return res.status(400).json({ error: 'results array required' });
+    }
+
+    // Map hebrew -> vocab id
+    const hebrews = results.map(r => r.hebrew);
+    const vocabRows = await pool.query(
+      'SELECT id, hebrew FROM vocabulary WHERE hebrew = ANY($1)',
+      [hebrews]
+    );
+    const hebrewToId = new Map(vocabRows.rows.map(r => [r.hebrew, r.id]));
+
+    // Apply updates
+    for (const r of results) {
+      const vocabId = hebrewToId.get(r.hebrew);
+      if (!vocabId) continue;
+      const learnedDelta = r.correct ? 1 : -1; // simple heuristic; can be tuned
+      const seenDelta = 1;
+      const wrongDelta = r.correct ? 0 : 1;
+      await upsertUserVocabProgress({
+        userId: req.user.id,
+        vocabId,
+        learnedDelta,
+        seenDelta,
+        wrongDelta
+      });
+    }
+
+    return res.json({ message: 'Progress recorded' });
+  } catch (error) {
+    console.error('Error recording progress:', error);
+    return res.status(500).json({ error: 'Failed to record progress' });
+  }
+});
+
 // Get single random word
 app.get('/api/word', async (req, res) => {
   try {
@@ -213,44 +281,124 @@ app.get('/api/word', async (req, res) => {
   }
 });
 
-// Submit score endpoint
+// Get current user's vocabulary progress list
+app.get('/api/progress', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT 
+         uvp.id,
+         uvp.vocabulary_id,
+         uvp.learned_score,
+         uvp.times_seen,
+         uvp.times_wrong,
+         uvp.first_seen,
+         uvp.last_seen,
+         v.hebrew,
+         v.rank,
+         v.english,
+         v.transliteration
+       FROM user_vocabulary_progress uvp
+       JOIN vocabulary v ON v.id = uvp.vocabulary_id
+       WHERE uvp.user_id = $1
+       ORDER BY COALESCE(uvp.last_seen, uvp.first_seen) DESC, uvp.id DESC`,
+      [req.user.id]
+    );
+    return res.json({ progress: result.rows });
+  } catch (error) {
+    console.error('Error fetching user progress:', error);
+    return res.status(500).json({ error: 'Failed to fetch progress' });
+  }
+});
+
+// Ensure user has at least N learning words (learned_score < 5)
+app.post('/api/progress/ensure', authenticateToken, async (req, res) => {
+  try {
+    const min = Number(req.body?.min) > 0 ? Number(req.body.min) : 15;
+
+    // Count current learning words
+    const countRes = await pool.query(
+      `SELECT COUNT(*)::int AS cnt
+       FROM user_vocabulary_progress
+       WHERE user_id = $1 AND learned_score < 5`,
+      [req.user.id]
+    );
+    const currentLearning = countRes.rows[0].cnt;
+    const toAdd = Math.max(0, min - currentLearning);
+
+    let added = [];
+    if (toAdd > 0) {
+      // Pick random vocab not already in UVP for this user
+      const pick = await pool.query(
+        `SELECT v.id
+         FROM vocabulary v
+         WHERE NOT EXISTS (
+           SELECT 1 FROM user_vocabulary_progress uvp
+           WHERE uvp.user_id = $1 AND uvp.vocabulary_id = v.id
+         )
+         ORDER BY RANDOM() LIMIT $2`,
+        [req.user.id, toAdd]
+      );
+
+      if (pick.rows.length > 0) {
+        const values = pick.rows.map((r) => `(${req.user.id}, ${r.id}, 0, 0, 0)`);
+        await pool.query(
+          `INSERT INTO user_vocabulary_progress (user_id, vocabulary_id, learned_score, times_seen, times_wrong)
+           VALUES ${values.join(', ')}
+           ON CONFLICT (user_id, vocabulary_id) DO NOTHING`
+        );
+        added = pick.rows.map(r => r.id);
+      }
+    }
+
+    // Return updated snapshot
+    const snapshot = await pool.query(
+      `SELECT 
+         uvp.id,
+         uvp.vocabulary_id,
+         uvp.learned_score,
+         uvp.times_seen,
+         uvp.times_wrong,
+         uvp.first_seen,
+         uvp.last_seen,
+         v.hebrew,
+         v.rank,
+         v.english,
+         v.transliteration
+       FROM user_vocabulary_progress uvp
+       JOIN vocabulary v ON v.id = uvp.vocabulary_id
+       WHERE uvp.user_id = $1 AND uvp.learned_score < 5
+       ORDER BY COALESCE(uvp.last_seen, uvp.first_seen) DESC, uvp.id DESC`,
+      [req.user.id]
+    );
+
+    return res.json({ ensuredMin: min, currentLearning: snapshot.rows.length, addedCount: added.length, learning: snapshot.rows });
+  } catch (error) {
+    console.error('Error ensuring learning minimum:', error);
+    return res.status(500).json({ error: 'Failed to ensure learning minimum' });
+  }
+});
+
+// Submit score endpoint (no-op: scores table removed)
 app.post('/api/scores', async (req, res) => {
   try {
     const { score, wordsAttempted, wordsCorrect, sessionDuration, wordsPerMinute } = req.body;
-    
-    // Validate required fields
-    if (!score || !wordsAttempted || !wordsCorrect || !sessionDuration) {
+    if (score == null || wordsAttempted == null || wordsCorrect == null || sessionDuration == null) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-    
-    // Calculate experience gained (simple formula)
-    const experienceGained = Math.floor(score / 10) + (wordsCorrect * 5);
-    
-    // Insert score into database
-    const result = await pool.query(
-      'INSERT INTO scores (score, words_attempted, words_correct, session_duration, words_per_minute, experience_gained) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
-      [score, wordsAttempted, wordsCorrect, sessionDuration, wordsPerMinute || null, experienceGained]
-    );
-    
-    console.log('Score submitted:', { 
-      id: result.rows[0].id,
-      score, 
-      wordsAttempted, 
-      wordsCorrect, 
-      sessionDuration,
-      wordsPerMinute,
-      experienceGained
-    });
-    
-    res.json({ 
-      message: 'Score recorded successfully',
-      scoreId: result.rows[0].id,
+    const experienceGained = Math.floor((Number(score) || 0) / 10) + ((Number(wordsCorrect) || 0) * 5);
+    // Since scores table was removed per new design, simply echo back success
+    return res.json({ 
+      message: 'Score received (not persisted by design)',
       finalScore: score,
+      wordsAttempted,
+      wordsCorrect,
+      sessionDuration,
+      wordsPerMinute: wordsPerMinute || null,
       experienceGained
     });
   } catch (error) {
-    console.error('Error saving score:', error);
-    res.status(500).json({ error: 'Failed to save score' });
+    console.error('Error handling score:', error);
+    return res.status(500).json({ error: 'Failed to handle score' });
   }
 });
 
