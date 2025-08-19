@@ -1,12 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
-import { getApiUrl } from '../config'
-import GameHeader from './GameHeader'
-import Loading from './Loading'
-import WordDisplay from './WordDisplay'
-import InputForm from './InputForm'
-import ResultDisplay from './ResultDisplay'
-import GameOver from './GameOver'
+import { getApiUrl } from '../../config'
+import { GameHeader, Loading, WordDisplay, InputForm, ResultDisplay, GameOver } from './index'
 import './GamePage.css'
 
 function GamePage({ onBackToMenu }) {
@@ -33,13 +28,24 @@ function GamePage({ onBackToMenu }) {
   // Fetch words from backend
   const fetchWords = async () => {
     try {
-      const response = await axios.get(getApiUrl('/words?count=20')) // Increased word count for speed test
+      // Check if user is authenticated
+      const token = localStorage.getItem('authToken')
+      if (!token) {
+        console.error('No auth token found')
+        return { success: false, words: [] }
+      }
+
+      // Set auth header
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      
+      // Fetch words from user's vocabulary
+      const response = await axios.get(getApiUrl('/words/user?count=20'))
       const fetchedWords = response.data.words
       setWords(fetchedWords)
-      console.log('Fetched words:', fetchedWords)
+      console.log('Fetched user words:', fetchedWords)
       return { success: true, words: fetchedWords }
     } catch (error) {
-      console.error('Error fetching words:', error)
+      console.error('Error fetching user words:', error)
       return { success: false, words: [] }
     }
   }

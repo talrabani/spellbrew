@@ -1,4 +1,4 @@
-/* User Bar Component */
+/* User Bar */
 .user-bar {
   position: relative;
   width: 100%;
@@ -14,18 +14,18 @@
   font-size: 0.9rem;
 }
 
-/* Player Bar (Logged In) */
+/* Player Bar (when logged in) */
 .player-bar {
   background: white;
   padding: 0.75rem 1.5rem;
   border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   gap: 1rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  width: 100%;
+  min-width: 200px;
   max-width: var(--app-width);
-  min-width: var(--app-width);
+  width: 100%;
   animation: fadeIn 0.5s ease-in;
   box-sizing: border-box;
 }
@@ -37,39 +37,35 @@
   background: #e2e8f0;
   border: 2px solid #cbd5e0;
   flex-shrink: 0;
-  /* Empty placeholder as requested */
 }
 
 .player-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
   flex: 1;
-  min-width: 0;
 }
 
 .player-name {
-  font-weight: 700;
+  font-weight: 600;
   color: #4a5568;
   font-size: 1rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .player-level {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex-shrink: 0;
 }
 
 .star-icon {
-  font-size: 1.2rem;
-  color: #f6e05e;
-  text-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+  color: #f6ad55;
+  font-size: 1rem;
 }
 
 .level-text {
-  font-size: 0.8rem;
   color: #718096;
+  font-size: 0.9rem;
   font-weight: 500;
 }
 
@@ -77,17 +73,16 @@
   background: none;
   border: none;
   color: #a0aec0;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   cursor: pointer;
   padding: 0.25rem;
   border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  flex-shrink: 0;
 }
 
 .logout-button:hover {
@@ -95,62 +90,39 @@
   color: #718096;
 }
 
-.logout-button:active {
-  transform: scale(0.95);
-}
-
-/* Auth Buttons (Not Logged In) */
+/* Auth Buttons (when not logged in) */
 .auth-buttons {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
   background: white;
   padding: 0.75rem 1.5rem;
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  animation: fadeIn 0.5s ease-in;
+  display: flex;
+  gap: 1rem;
   width: 100%;
   max-width: var(--app-width);
-  min-width: var(--app-width);
-  justify-content: flex-end;
+  justify-content: center;
+  animation: fadeIn 0.5s ease-in;
   box-sizing: border-box;
 }
 
-.login-button,
-.signup-button {
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-  white-space: nowrap;
-}
-
-.login-button {
-  background: transparent;
-  color: #667eea;
-  border: 1px solid #667eea;
-}
-
-.login-button:hover {
-  background: rgba(102, 126, 234, 0.1);
-}
-
-.signup-button {
+.login-button, .signup-button {
   background: linear-gradient(45deg, #667eea, #764ba2);
+  border: none;
   color: white;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.signup-button:hover {
+.login-button:hover, .signup-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
-.login-button:active,
-.signup-button:active {
+.login-button:active, .signup-button:active {
   transform: translateY(0);
 }
 
@@ -160,71 +132,67 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Mobile Responsive */
+/* Responsive Design */
 @media (max-width: 480px) {
   .player-bar {
+    width: 100%;
+    max-width: 100%;
+    min-width: auto;
     padding: 0.6rem 1.2rem;
-    gap: 0.8rem;
   }
-
+  
   .auth-buttons {
+    width: 100%;
+    max-width: 100%;
+    min-width: auto;
     padding: 0.6rem 1.2rem;
   }
-
-  .profile-picture-placeholder {
-    width: 35px;
-    height: 35px;
-  }
-
+  
   .player-name {
     font-size: 0.9rem;
   }
-
-  .star-icon {
-    font-size: 1.1rem;
-  }
-
+  
   .level-text {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
   }
-
-  .login-button,
-  .signup-button {
-    padding: 0.4rem 0.8rem;
+  
+  .login-button, .signup-button {
     font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .logout-button {
+    width: 28px;
+    height: 28px;
+    font-size: 1.3rem;
   }
 }
 
 @media (max-width: 360px) {
   .player-bar {
     padding: 0.5rem 1rem;
-    gap: 0.6rem;
   }
-
+  
   .auth-buttons {
     padding: 0.5rem 1rem;
   }
-
-  .profile-picture-placeholder {
-    width: 30px;
-    height: 30px;
-  }
-
+  
   .player-name {
     font-size: 0.85rem;
   }
-
-  .star-icon {
-    font-size: 1rem;
-  }
-
+  
   .level-text {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
   }
-
-  .login-button,
-  .signup-button {
-    padding: 0.35rem 0.7rem;
+  
+  .login-button, .signup-button {
     font-size: 0.8rem;
+    padding: 0.35rem 0.7rem;
+  }
+  
+  .logout-button {
+    width: 26px;
+    height: 26px;
+    font-size: 1.2rem;
   }
 }

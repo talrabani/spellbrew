@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import HomePage from './components/HomePage'
-import GamePage from './components/GamePage'
+import { HomePage, GamePage } from './components'
 import './App.css'
 
 function App() {

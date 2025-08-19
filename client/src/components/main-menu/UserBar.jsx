@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import { getApiUrl } from '../config'
+import { getApiUrl } from '../../config'
 import './UserBar.css'
 
-function UserBar({ onNavigateToLogin, onNavigateToSignup }) {
+function UserBar({ onNavigateToLogin, onNavigateToSignup, onUserChange }) {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -20,7 +20,11 @@ function UserBar({ onNavigateToLogin, onNavigateToSignup }) {
         
         // Fetch user data from API
         const response = await axios.get(getApiUrl('/user/profile'))
-        setUser(response.data.user)
+        const userData = response.data.user
+        setUser(userData)
+        if (onUserChange) {
+          onUserChange(userData)
+        }
       }
     } catch (error) {
       console.error('Error checking auth status:', error)
@@ -44,6 +48,9 @@ function UserBar({ onNavigateToLogin, onNavigateToSignup }) {
     localStorage.removeItem('authToken')
     delete axios.defaults.headers.common['Authorization']
     setUser(null)
+    if (onUserChange) {
+      onUserChange(null)
+    }
   }
 
   if (isLoading) {

@@ -1,0 +1,75 @@
+/* Review Vocab Button */
+.review-vocab-container {
+  margin-top: 1rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.review-vocab-button {
+  background: linear-gradient(45deg, #48bb78, #38a169);
+  border: none;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 200px;
+  justify-content: center;
+}
+
+.review-vocab-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(72, 187, 120, 0.4);
+}
+
+.review-vocab-button:active {
+  transform: translateY(0);
+}
+
+.review-icon {
+  font-size: 1.2rem;
+}
+
+.review-text {
+  font-size: 0.95rem;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .review-vocab-button {
+    font-size: 0.9rem;
+    padding: 0.6rem 1.2rem;
+    min-width: 180px;
+  }
+  
+  .review-icon {
+    font-size: 1.1rem;
+  }
+  
+  .review-text {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .review-vocab-button {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    min-width: 160px;
+  }
+  
+  .review-icon {
+    font-size: 1rem;
+  }
+  
+  .review-text {
+    font-size: 0.85rem;
+  }
+}

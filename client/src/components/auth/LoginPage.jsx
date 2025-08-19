@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import axios from 'axios'
-import { getApiUrl } from '../config'
+import { getApiUrl } from '../../config'
 import './LoginPage.css'
 
 function LoginPage({ onBackToHome, onLoginSuccess }) {

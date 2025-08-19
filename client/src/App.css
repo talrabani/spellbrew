@@ -16,7 +16,8 @@
 }
 
 .App {
-  width: var(--app-width);
+  width: 100%;
+  max-width: var(--app-width);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -30,6 +31,8 @@
 /* Mobile-first responsive design */
 @media (max-width: 480px) {
   .App {
+    width: 100%;
+    max-width: 100%;
     padding: 0.75rem;
   }
 }

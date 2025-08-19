@@ -1,0 +1,75 @@
+/* Debug Panel */
+.debug-panel {
+  margin-top: 1rem;
+  width: 100%;
+  max-width: var(--app-width);
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.debug-header {
+  font-weight: 800;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+}
+
+.debug-section {
+  margin-top: 0.75rem;
+}
+
+.debug-section-title {
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.debug-row {
+  color: #4a5568;
+  font-size: 0.95rem;
+}
+
+.debug-error {
+  color: #c53030;
+  background: #fed7d7;
+  border: 1px solid #feb2b2;
+  padding: 0.5rem;
+  border-radius: 8px;
+}
+
+.debug-pre {
+  margin: 0;
+  padding: 0.75rem;
+  background: #f7fafc;
+  border-radius: 8px;
+  overflow: auto;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.debug-table-wrapper {
+  overflow: auto;
+}
+
+.debug-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.debug-table th, .debug-table td {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.debug-table th {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.rtl {
+  direction: rtl;
+  font-family: 'Arial', 'Noto Sans Hebrew', 'David', sans-serif;
+}

@@ -195,7 +195,7 @@ app.get('/api/user/profile', authenticateToken, async (req, res) => {
   }
 });
 
-// Get batch of random words from database
+// Get batch of random words from database (for non-authenticated users)
 app.get('/api/words', async (req, res) => {
   try {
     const count = parseInt(req.query.count) || 10;
@@ -216,6 +216,34 @@ app.get('/api/words', async (req, res) => {
   } catch (error) {
     console.error('Error fetching words:', error);
     res.status(500).json({ error: 'Failed to fetch words' });
+  }
+});
+
+// Get batch of words from user's vocabulary (authenticated users only)
+app.get('/api/words/user', authenticateToken, async (req, res) => {
+  try {
+    const count = parseInt(req.query.count) || 10;
+    
+    // Get random words from user's vocabulary progress
+    const result = await pool.query(
+      `SELECT v.hebrew, v.english, v.transliteration 
+       FROM user_vocabulary_progress uvp
+       JOIN vocabulary v ON v.id = uvp.vocabulary_id
+       WHERE uvp.user_id = $1
+       ORDER BY RANDOM() LIMIT $2`,
+      [req.user.id, count]
+    );
+    
+    const words = result.rows.map(row => row.hebrew);
+    
+    res.json({ 
+      words: words,
+      totalAvailable: result.rows.length,
+      details: result.rows
+    });
+  } catch (error) {
+    console.error('Error fetching user words:', error);
+    res.status(500).json({ error: 'Failed to fetch user words' });
   }
 });
 
@@ -310,10 +338,74 @@ app.get('/api/progress', authenticateToken, async (req, res) => {
   }
 });
 
+// Get current user's vocabulary progress list with sorting/filtering
+app.get('/api/progress/list', authenticateToken, async (req, res) => {
+  try {
+    // Query params
+    const sortByRaw = (req.query.sortBy || 'progress').toString().toLowerCase();
+    const sortDirRaw = (req.query.sortDir || 'asc').toString().toLowerCase();
+    const progressFilterRaw = (req.query.progress || 'all').toString().toLowerCase(); // 'all' | 'learning' | 'learned'
+    const newWithinHours = req.query.newWithinHours ? Number(req.query.newWithinHours) : null; // e.g., 24
+
+    // Whitelist sorting
+    const sortColumns = {
+      progress: 'uvp.learned_score',
+      alpha: 'v.hebrew',
+      seen: 'uvp.times_seen',
+      wrong: 'uvp.times_wrong',
+      last_seen: 'COALESCE(uvp.last_seen, uvp.first_seen)'
+    };
+    const sortColumn = sortColumns[sortByRaw] || sortColumns.progress;
+    const sortDir = sortDirRaw === 'desc' ? 'DESC' : 'ASC';
+
+    // Build WHERE clause
+    const whereClauses = ['uvp.user_id = $1'];
+    const values = [req.user.id];
+
+    if (progressFilterRaw === 'learning') {
+      whereClauses.push('uvp.learned_score < 5');
+    } else if (progressFilterRaw === 'learned') {
+      whereClauses.push('uvp.learned_score >= 5');
+    }
+
+    if (newWithinHours && Number.isFinite(newWithinHours) && newWithinHours > 0) {
+      values.push(newWithinHours);
+      whereClauses.push('uvp.first_seen >= NOW() - ($' + values.length + ' || \n' + "' hours'\n) :: interval");
+    }
+
+    const whereSql = whereClauses.length ? 'WHERE ' + whereClauses.join(' AND ') : '';
+
+    const sql = `
+      SELECT 
+        uvp.id,
+        uvp.vocabulary_id,
+        uvp.learned_score,
+        uvp.times_seen,
+        uvp.times_wrong,
+        uvp.first_seen,
+        uvp.last_seen,
+        v.hebrew,
+        v.rank,
+        v.english,
+        v.transliteration
+      FROM user_vocabulary_progress uvp
+      JOIN vocabulary v ON v.id = uvp.vocabulary_id
+      ${whereSql}
+      ORDER BY ${sortColumn} ${sortDir}, uvp.id ASC
+    `;
+
+    const result = await pool.query(sql, values);
+    return res.json({ progress: result.rows });
+  } catch (error) {
+    console.error('Error fetching sorted/filtered progress:', error);
+    return res.status(500).json({ error: 'Failed to fetch progress list' });
+  }
+});
+
 // Ensure user has at least N learning words (learned_score < 5)
 app.post('/api/progress/ensure', authenticateToken, async (req, res) => {
   try {
-    const min = Number(req.body?.min) > 0 ? Number(req.body.min) : 15;
+    const min = Number(req.body?.min) > 0 ? Number(req.body.min) : 20;
 
     // Count current learning words
     const countRes = await pool.query(
