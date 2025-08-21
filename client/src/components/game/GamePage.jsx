@@ -319,11 +319,18 @@ function GamePage({ onBackToMenu }) {
 
       case 'showing':
         return (
-          <WordDisplay 
-            word={currentWord} 
-            instruction="Memorize this word!"
-            displayTime={calculateDisplayTime(wordDetails.find(detail => detail.hebrew === currentWord)?.fsrs_stability || 0.1)}
-          />
+          <div className="showing-container">
+            <WordDisplay 
+              word={currentWord} 
+              instruction="Memorize this word!"
+              displayTime={calculateDisplayTime(wordDetails.find(detail => detail.hebrew === currentWord)?.fsrs_stability || 0.1)}
+            />
+            {showReviewButton && currentWordIndex > 0 && (
+              <button className="review-button" onClick={showReview}>
+                Review Last Answer
+              </button>
+            )}
+          </div>
         )
 
       case 'input':
