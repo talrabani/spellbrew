@@ -25,6 +25,37 @@
   text-align: center;
 }
 
+/* Countdown Timer */
+.countdown-container {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.countdown-bar {
+  width: 200px;
+  height: 8px;
+  background-color: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.countdown-progress {
+  height: 100%;
+  background: linear-gradient(90deg, #48bb78, #38a169);
+  transition: width 0.1s linear;
+  border-radius: 4px;
+}
+
+.countdown-text {
+  font-size: 0.9rem;
+  color: #4a5568;
+  font-weight: 500;
+}
+
 /* Animations */
 @keyframes wordFlash {
   0% { opacity: 0; transform: scale(0.8); }

@@ -1,4 +1,4 @@
-import './ResultDisplay.css'
+import './ReviewWord.css'
 
 function ReviewWord({ isCorrect, correctWord, userInput, english, transliteration }) {
   return (

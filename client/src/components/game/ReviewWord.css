@@ -7,6 +7,10 @@
   justify-content: center;
   flex: 1;
   width: 100%;
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .result-text {
@@ -16,11 +20,11 @@
 }
 
 .correct-text {
-  color: white;
+  color: #2e7d32;
 }
 
 .incorrect-text {
-  color: white;
+  color: #d32f2f;
 }
 
 .word-comparison {
@@ -28,7 +32,7 @@
   flex-direction: column;
   gap: 0.4rem;
   font-size: 1rem;
-  color: rgba(255, 255, 255, 0.9);
+  color: #333;
   width: 100%;
   max-width: 280px;
 }
@@ -36,11 +40,23 @@
 .correct-word {
   font-weight: bold;
   direction: rtl;
+  color: #2e7d32;
 }
 
 .user-word {
   font-weight: bold;
   direction: rtl;
+  color: #d32f2f;
+}
+
+.english-text {
+  font-weight: bold;
+  color: #1976d2;
+}
+
+.transliteration-text {
+  font-weight: bold;
+  color: #7b1fa2;
 }
 
 /* Mobile Responsive Design */

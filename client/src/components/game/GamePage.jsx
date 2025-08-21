@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { getApiUrl } from '../../config'
-import { GameHeader, Loading, WordDisplay, InputForm, ResultDisplay, GameOver } from './index'
+import { GameHeader, Loading, WordDisplay, InputForm, ReviewWord, GameOver } from './index'
 import './GamePage.css'
 
 function GamePage({ onBackToMenu }) {
   // Game states: 'loading', 'showing', 'input', 'flash', 'review', 'gameOver'
   const [gameState, setGameState] = useState('loading')
   const [words, setWords] = useState([])
+  const [wordDetails, setWordDetails] = useState([]) // Store full word details including English and transliteration
   const [currentWordIndex, setCurrentWordIndex] = useState(0)
   const [currentWord, setCurrentWord] = useState('')
   const [userInput, setUserInput] = useState('')
@@ -18,11 +19,53 @@ function GamePage({ onBackToMenu }) {
   const [showReviewButton, setShowReviewButton] = useState(false)
   const [wordsPerMinute, setWordsPerMinute] = useState(0)
   const [lastTestedWord, setLastTestedWord] = useState('') // Store the word that was being tested
+  const [lastTestedWordDetails, setLastTestedWordDetails] = useState(null) // Store the full details of the tested word
+  const [gameResults, setGameResults] = useState([]) // Track results for FSRS progress
+  const [wordDisplayTimes, setWordDisplayTimes] = useState({}) // Store display times for each word
   const hasInitialized = useRef(false)
 
   // Normalize Hebrew text for comparison
   const normalizeHebrew = (text) => {
     return text.trim().replace(/\s+/g, ' ')
+  }
+
+  // Calculate display time for a word based on FSRS stability
+  const calculateDisplayTime = (stability) => {
+    // Convert stability to a number and clamp it
+    const stabilityNum = Math.max(0.1, Math.min(10, parseFloat(stability) || 0.1))
+    
+    // Map stability to display time:
+    // - New words (stability ~0.1): 3 seconds
+    // - Learning words (stability ~0.5): 2 seconds  
+    // - Reviewing words (stability ~1-2): 1.5 seconds
+    // - Well-known words (stability ~3-5): 1 second
+    // - Mastered words (stability ~5+): 0.2 seconds
+    if (stabilityNum <= 0.3) return 3000 // 3 seconds for very new words
+    if (stabilityNum <= 0.8) return 2000 // 2 seconds for learning words
+    if (stabilityNum <= 2.0) return 1500 // 1.5 seconds for reviewing words
+    if (stabilityNum <= 4.0) return 1000 // 1 second for well-known words
+    return 200 // 0.2 seconds for mastered words
+  }
+
+  // Save FSRS progress for a single word
+  const saveFSRSProgress = async (hebrew, correct) => {
+    try {
+      const token = localStorage.getItem('authToken')
+      if (!token) {
+        console.error('No auth token found for FSRS progress')
+        return
+      }
+
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      
+      await axios.post(getApiUrl('/progress/batch'), {
+        results: [{ hebrew, correct }]
+      })
+      
+      console.log(`FSRS progress saved for word: ${hebrew} (${correct ? 'correct' : 'incorrect'})`)
+    } catch (error) {
+      console.error('Error saving FSRS progress:', error)
+    }
   }
 
   // Fetch words from backend
@@ -38,12 +81,36 @@ function GamePage({ onBackToMenu }) {
       // Set auth header
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
       
+      // First, auto-manage the user's vocabulary (add new words if needed)
+      try {
+        const autoManageResponse = await axios.post(getApiUrl('/progress/auto-manage'))
+        if (autoManageResponse.data.action === 'added_words') {
+          console.log(`Auto-added ${autoManageResponse.data.wordsAdded} new words:`, autoManageResponse.data.reason)
+        }
+      } catch (autoManageError) {
+        console.warn('Auto-manage failed, continuing with existing words:', autoManageError)
+      }
+      
       // Fetch words from user's vocabulary
       const response = await axios.get(getApiUrl('/words/user?count=20'))
       const fetchedWords = response.data.words
-      setWords(fetchedWords)
-      console.log('Fetched user words:', fetchedWords)
-      return { success: true, words: fetchedWords }
+      const fetchedDetails = response.data.details
+      
+      // Shuffle the words and details arrays together
+      const shuffledIndices = Array.from({ length: fetchedWords.length }, (_, i) => i)
+      for (let i = shuffledIndices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledIndices[i], shuffledIndices[j]] = [shuffledIndices[j], shuffledIndices[i]]
+      }
+      
+      const shuffledWords = shuffledIndices.map(i => fetchedWords[i])
+      const shuffledDetails = shuffledIndices.map(i => fetchedDetails[i])
+      
+      setWords(shuffledWords)
+      setWordDetails(shuffledDetails)
+      console.log('Fetched and shuffled user words:', shuffledWords)
+      console.log('Fetched and shuffled word details:', shuffledDetails)
+      return { success: true, words: shuffledWords, details: shuffledDetails }
     } catch (error) {
       console.error('Error fetching user words:', error)
       return { success: false, words: [] }
@@ -67,6 +134,8 @@ function GamePage({ onBackToMenu }) {
       setIsCorrect(null)
       setShowReviewButton(false)
       setLastTestedWord('')
+      setLastTestedWordDetails(null)
+      setGameResults([])
       
       const result = await fetchWords()
       console.log('Fetch result:', result)
@@ -79,13 +148,23 @@ function GamePage({ onBackToMenu }) {
         setWordsPerMinute(0)
         
         // Force the game to start by directly setting the first word
-        setCurrentWord(result.words[0])
+        const firstWord = result.words[0]
+        setCurrentWord(firstWord)
         setGameState('showing')
         
-        // Hide word after 1.5 seconds
+        // Get the word details to find FSRS stability
+        const firstWordDetail = result.details.find(detail => detail.hebrew === firstWord)
+        const stability = firstWordDetail?.fsrs_stability || 0.1
+        
+        // Calculate adaptive display time based on FSRS stability
+        const displayTime = calculateDisplayTime(stability)
+        
+        console.log(`Showing first word "${firstWord}" for ${displayTime}ms (stability: ${stability})`)
+        
+        // Hide word after adaptive time
         setTimeout(() => {
           setGameState('input')
-        }, 1500)
+        }, displayTime)
       } else {
         console.log('Failed to load words, going back to menu')
         // If fetch fails, go back to menu
@@ -99,13 +178,23 @@ function GamePage({ onBackToMenu }) {
   // Show current word
   const showWord = (wordsToUse = words, indexToUse = currentWordIndex) => {
     if (indexToUse < wordsToUse.length && wordsToUse.length > 0) {
-      setCurrentWord(wordsToUse[indexToUse])
+      const currentWord = wordsToUse[indexToUse]
+      setCurrentWord(currentWord)
       setGameState('showing')
       
-      // Hide word after 1.5 seconds (faster for speed test)
+      // Get the word details to find FSRS stability
+      const currentWordDetail = wordDetails.find(detail => detail.hebrew === currentWord)
+      const stability = currentWordDetail?.fsrs_stability || 0.1
+      
+      // Calculate adaptive display time based on FSRS stability
+      const displayTime = calculateDisplayTime(stability)
+      
+      console.log(`Showing word "${currentWord}" for ${displayTime}ms (stability: ${stability})`)
+      
+      // Hide word after adaptive time
       setTimeout(() => {
         setGameState('input')
-      }, 1500)
+      }, displayTime)
     } else if (wordsToUse.length === 0) {
       // If no words loaded, stay in loading state
       setGameState('loading')
@@ -122,6 +211,15 @@ function GamePage({ onBackToMenu }) {
     
     // Store the word that was being tested
     setLastTestedWord(currentWord)
+    // Store the word details for the review
+    const currentWordDetail = wordDetails.find(detail => detail.hebrew === currentWord)
+    setLastTestedWordDetails(currentWordDetail)
+    
+    // Track result for FSRS progress
+    setGameResults(prev => [...prev, { hebrew: currentWord, correct }])
+    
+    // Save FSRS progress immediately after each word
+    saveFSRSProgress(currentWord, correct)
     
     if (correct) {
       setScore(score + 10)
@@ -167,6 +265,7 @@ function GamePage({ onBackToMenu }) {
     setWordsPerMinute(wpm)
     
     try {
+      // Submit score
       await axios.post(getApiUrl('/scores'), {
         score,
         wordsAttempted: currentWordIndex + 1,
@@ -174,8 +273,10 @@ function GamePage({ onBackToMenu }) {
         sessionDuration,
         wordsPerMinute: wpm
       })
+      
+      // FSRS progress is now saved after each word submission, so no need to save here
     } catch (error) {
-      console.error('Error submitting score:', error)
+      console.error('Error submitting score or progress:', error)
     }
   }
 
@@ -190,6 +291,8 @@ function GamePage({ onBackToMenu }) {
     setIsCorrect(null)
     setShowReviewButton(false)
     setLastTestedWord('')
+    setLastTestedWordDetails(null)
+    setGameResults([]) // Reset game results
     setGameState('loading')
     hasInitialized.current = false // Reset initialization flag
     
@@ -218,7 +321,8 @@ function GamePage({ onBackToMenu }) {
         return (
           <WordDisplay 
             word={currentWord} 
-            instruction="Memorize this word!" 
+            instruction="Memorize this word!"
+            displayTime={calculateDisplayTime(wordDetails.find(detail => detail.hebrew === currentWord)?.fsrs_stability || 0.1)}
           />
         )
 
@@ -246,10 +350,12 @@ function GamePage({ onBackToMenu }) {
       case 'review':
         return (
           <div className="review-container">
-            <ResultDisplay 
+            <ReviewWord 
               isCorrect={isCorrect}
               correctWord={lastTestedWord}
               userInput={userInput}
+              english={lastTestedWordDetails?.english || ''}
+              transliteration={lastTestedWordDetails?.transliteration || ''}
             />
           </div>
         )

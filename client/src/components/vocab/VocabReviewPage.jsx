@@ -12,9 +12,9 @@ function VocabReviewPage({ onBackToHome }) {
 
   // Sort / Filter state
   const [panelOpen, setPanelOpen] = useState(false)
-  const [sortBy, setSortBy] = useState('progress') // progress | alpha | seen | wrong | last_seen
+  const [sortBy, setSortBy] = useState('progress') // progress | stability | difficulty | retrievability | reviews | alpha | seen | wrong | last_seen | next_review
   const [sortDir, setSortDir] = useState('asc') // asc | desc
-  const [filterProgress, setFilterProgress] = useState('all') // all | learning | learned
+  const [filterProgress, setFilterProgress] = useState('all') // all | learning | reviewing | mastered
   const [filterNewWithinHours, setFilterNewWithinHours] = useState(null) // e.g., 24
 
   const fetchProgress = async () => {
@@ -29,6 +29,17 @@ function VocabReviewPage({ onBackToHome }) {
       }
 
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      
+      // First, auto-manage the user's vocabulary (add new words if needed)
+      try {
+        const autoManageResponse = await axios.post(getApiUrl('/progress/auto-manage'))
+        if (autoManageResponse.data.action === 'added_words') {
+          console.log(`Auto-added ${autoManageResponse.data.wordsAdded} new words:`, autoManageResponse.data.reason)
+        }
+      } catch (autoManageError) {
+        console.warn('Auto-manage failed, continuing with existing words:', autoManageError)
+      }
+      
       const params = {
         sortBy,
         sortDir,
@@ -39,7 +50,9 @@ function VocabReviewPage({ onBackToHome }) {
       const response = await axios.get(getApiUrl('/progress/list'), { params })
       setProgress(response.data.progress || [])
     } catch (e) {
-      setError(e.response?.data?.error || e.message)
+      console.error('Error fetching progress:', e)
+      setError(e.response?.data?.error || e.message || 'Failed to fetch progress')
+      setProgress([]) // Reset progress to prevent rendering issues
     } finally {
       setLoading(false)
     }
@@ -50,18 +63,15 @@ function VocabReviewPage({ onBackToHome }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortBy, sortDir, filterProgress, filterNewWithinHours])
 
-  const getProgressColor = (learnedScore) => {
-    if (learnedScore >= 5) return '#48bb78' // Green - learned
-    if (learnedScore >= 3) return '#ed8936' // Orange - getting there
-    if (learnedScore >= 1) return '#ecc94b' // Yellow - started
-    return '#e53e3e' // Red - not started
+  const getProgressColor = (progressPercentage, learningStatus) => {
+    if (learningStatus === 'mastered') return '#48bb78' // Green - mastered
+    if (learningStatus === 'reviewing') return '#ed8936' // Orange - reviewing
+    if (learningStatus === 'learning') return '#ecc94b' // Yellow - learning
+    return '#e53e3e' // Red - new
   }
 
-  const getProgressText = (learnedScore) => {
-    if (learnedScore >= 5) return 'Learned'
-    if (learnedScore >= 3) return 'Getting There'
-    if (learnedScore >= 1) return 'Started'
-    return 'Not Started'
+  const getProgressText = (progressPercentage) => {
+    return `${progressPercentage}%`
   }
 
   const handleMouseEnter = (word) => {
@@ -111,12 +121,20 @@ function VocabReviewPage({ onBackToHome }) {
                 <span className="stat-value">{progress.length}</span>
               </div>
               <div className="stat-item">
-                <span className="stat-label">Learned:</span>
-                <span className="stat-value">{progress.filter(p => p.learned_score >= 5).length}</span>
+                <span className="stat-label">Mastered:</span>
+                <span className="stat-value">{progress.filter(p => p.learning_status === 'mastered').length}</span>
               </div>
               <div className="stat-item">
-                <span className="stat-label">In Progress:</span>
-                <span className="stat-value">{progress.filter(p => p.learned_score < 5 && p.learned_score > 0).length}</span>
+                <span className="stat-label">Reviewing:</span>
+                <span className="stat-value">{progress.filter(p => p.learning_status === 'reviewing').length}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">Learning:</span>
+                <span className="stat-value">{progress.filter(p => p.learning_status === 'learning').length}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">New:</span>
+                <span className="stat-value">{progress.filter(p => p.learning_status === 'new').length}</span>
               </div>
             </div>
 
@@ -130,6 +148,12 @@ function VocabReviewPage({ onBackToHome }) {
                     <div className="filter-title">Sort by</div>
                     <div className="filter-row">
                       <label><input type="radio" name="sortBy" checked={sortBy==='progress'} onChange={() => setSortBy('progress')} /> Progress</label>
+                      <label><input type="radio" name="sortBy" checked={sortBy==='stability'} onChange={() => setSortBy('stability')} /> Stability</label>
+                      <label><input type="radio" name="sortBy" checked={sortBy==='difficulty'} onChange={() => setSortBy('difficulty')} /> Difficulty</label>
+                    </div>
+                    <div className="filter-row">
+                      <label><input type="radio" name="sortBy" checked={sortBy==='retrievability'} onChange={() => setSortBy('retrievability')} /> Retrievability</label>
+                      <label><input type="radio" name="sortBy" checked={sortBy==='reviews'} onChange={() => setSortBy('reviews')} /> Reviews</label>
                       <label><input type="radio" name="sortBy" checked={sortBy==='alpha'} onChange={() => setSortBy('alpha')} /> Alphabetically</label>
                     </div>
                     <div className="filter-row">
@@ -138,6 +162,7 @@ function VocabReviewPage({ onBackToHome }) {
                       <label><input type="radio" name="sortBy" checked={sortBy==='last_seen'} onChange={() => setSortBy('last_seen')} /> Last Seen</label>
                     </div>
                     <div className="filter-row">
+                      <label><input type="radio" name="sortBy" checked={sortBy==='next_review'} onChange={() => setSortBy('next_review')} /> Next Review</label>
                       <label className="dir-label">Direction:
                         <select value={sortDir} onChange={(e)=>setSortDir(e.target.value)}>
                           <option value="asc">Ascending</option>
@@ -152,7 +177,8 @@ function VocabReviewPage({ onBackToHome }) {
                     <div className="filter-row">
                       <label><input type="radio" name="progressFilter" checked={filterProgress==='all'} onChange={() => setFilterProgress('all')} /> All</label>
                       <label><input type="radio" name="progressFilter" checked={filterProgress==='learning'} onChange={() => setFilterProgress('learning')} /> Learning</label>
-                      <label><input type="radio" name="progressFilter" checked={filterProgress==='learned'} onChange={() => setFilterProgress('learned')} /> Learned</label>
+                      <label><input type="radio" name="progressFilter" checked={filterProgress==='reviewing'} onChange={() => setFilterProgress('reviewing')} /> Reviewing</label>
+                      <label><input type="radio" name="progressFilter" checked={filterProgress==='mastered'} onChange={() => setFilterProgress('mastered')} /> Mastered</label>
                     </div>
                     <div className="filter-row">
                       <label className="dir-label">New Words (hours):
@@ -183,7 +209,7 @@ function VocabReviewPage({ onBackToHome }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {progress.map((word) => (
+                    {progress.filter(word => word && word.id && word.hebrew).map((word) => (
                       <tr 
                         key={word.id}
                         className={hoveredWord?.id === word.id ? 'hovered' : ''}
@@ -200,19 +226,35 @@ function VocabReviewPage({ onBackToHome }) {
                           <div className="progress-indicator">
                             <span 
                               className="progress-dot" 
-                              style={{ backgroundColor: getProgressColor(word.learned_score) }}
+                              style={{ backgroundColor: getProgressColor(word.progress_percentage || 0, word.learning_status || 'new') }}
                             ></span>
-                            <span className="progress-text">{getProgressText(word.learned_score)}</span>
+                            <span className="progress-text">{getProgressText(word.progress_percentage || 0)}</span>
                           </div>
                           {hoveredWord?.id === word.id && (
                             <div className="word-details">
                               <div className="detail-item">
+                                <span className="detail-label">Stability:</span>
+                                <span className="detail-value">
+                                  {typeof word.fsrs_stability === 'number' ? word.fsrs_stability.toFixed(2) : '0.10'}
+                                </span>
+                              </div>
+                              <div className="detail-item">
+                                <span className="detail-label">Difficulty:</span>
+                                <span className="detail-value">
+                                  {typeof word.fsrs_difficulty === 'number' ? word.fsrs_difficulty.toFixed(2) : '5.00'}
+                                </span>
+                              </div>
+                              <div className="detail-item">
+                                <span className="detail-label">Reviews:</span>
+                                <span className="detail-value">{word.fsrs_review_count || 0}</span>
+                              </div>
+                              <div className="detail-item">
                                 <span className="detail-label">Seen:</span>
-                                <span className="detail-value">{word.times_seen}</span>
+                                <span className="detail-value">{word.times_seen || 0}</span>
                               </div>
                               <div className="detail-item">
                                 <span className="detail-label">Wrong:</span>
-                                <span className="detail-value">{word.times_wrong}</span>
+                                <span className="detail-value">{word.times_wrong || 0}</span>
                               </div>
                               <div className="detail-item">
                                 <span className="detail-label">Last Seen:</span>
@@ -220,6 +262,16 @@ function VocabReviewPage({ onBackToHome }) {
                                   {word.last_seen ? new Date(word.last_seen).toLocaleDateString() : 'Never'}
                                 </span>
                               </div>
+                              {word.fsrs_next_review && (
+                                <div className="detail-item">
+                                  <span className="detail-label">Next Review:</span>
+                                  <span className="detail-value">
+                                    {word.days_until_next_review > 0 
+                                      ? `${word.days_until_next_review} days` 
+                                      : 'Due now'}
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           )}
                         </td>
