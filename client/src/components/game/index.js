@@ -1,6 +1,7 @@
 export { default as GamePage } from './GamePage'
 export { default as GameHeader } from './GameHeader'
 export { default as WordDisplay } from './WordDisplay'
+export { default as NewWordCard } from './NewWordCard'
 export { default as InputForm } from './InputForm'
 export { default as ReviewWord } from './ReviewWord'
 export { default as GameOver } from './GameOver'

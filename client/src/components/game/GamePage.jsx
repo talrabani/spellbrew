@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { getApiUrl } from '../../config'
-import { GameHeader, Loading, WordDisplay, InputForm, ReviewWord, GameOver } from './index'
+import { GameHeader, Loading, WordDisplay, NewWordCard, InputForm, ReviewWord, GameOver } from './index'
 import './GamePage.css'
 
 function GamePage({ onBackToMenu }) {
@@ -27,6 +27,12 @@ function GamePage({ onBackToMenu }) {
   // Normalize Hebrew text for comparison
   const normalizeHebrew = (text) => {
     return text.trim().replace(/\s+/g, ' ')
+  }
+
+  // Check if a word is new (very low FSRS stability)
+  const isNewWord = (stability) => {
+    const stabilityNum = parseFloat(stability) || 0.1
+    return stabilityNum <= 0.3
   }
 
   // Calculate display time for a word based on FSRS stability
@@ -155,16 +161,22 @@ function GamePage({ onBackToMenu }) {
         // Get the word details to find FSRS stability
         const firstWordDetail = result.details.find(detail => detail.hebrew === firstWord)
         const stability = firstWordDetail?.fsrs_stability || 0.1
+        const isNew = isNewWord(stability)
         
-        // Calculate adaptive display time based on FSRS stability
-        const displayTime = calculateDisplayTime(stability)
-        
-        console.log(`Showing first word "${firstWord}" for ${displayTime}ms (stability: ${stability})`)
-        
-        // Hide word after adaptive time
-        setTimeout(() => {
-          setGameState('input')
-        }, displayTime)
+        // Only set timer for non-new words
+        if (!isNew) {
+          // Calculate adaptive display time based on FSRS stability
+          const displayTime = calculateDisplayTime(stability)
+          
+          console.log(`Showing first word "${firstWord}" for ${displayTime}ms (stability: ${stability}, new: ${isNew})`)
+          
+          // Hide word after adaptive time
+          setTimeout(() => {
+            setGameState('input')
+          }, displayTime)
+        } else {
+          console.log(`Showing first word "${firstWord}" (stability: ${stability}, new: ${isNew}) - waiting for user input`)
+        }
       } else {
         console.log('Failed to load words, going back to menu')
         // If fetch fails, go back to menu
@@ -174,6 +186,11 @@ function GamePage({ onBackToMenu }) {
     
     initializeGame()
   }, []) // Keep empty dependency array
+
+  // Continue from new word card
+  const continueFromNewWord = () => {
+    setGameState('input')
+  }
 
   // Show current word
   const showWord = (wordsToUse = words, indexToUse = currentWordIndex) => {
@@ -185,16 +202,22 @@ function GamePage({ onBackToMenu }) {
       // Get the word details to find FSRS stability
       const currentWordDetail = wordDetails.find(detail => detail.hebrew === currentWord)
       const stability = currentWordDetail?.fsrs_stability || 0.1
+      const isNew = isNewWord(stability)
       
-      // Calculate adaptive display time based on FSRS stability
-      const displayTime = calculateDisplayTime(stability)
-      
-      console.log(`Showing word "${currentWord}" for ${displayTime}ms (stability: ${stability})`)
-      
-      // Hide word after adaptive time
-      setTimeout(() => {
-        setGameState('input')
-      }, displayTime)
+      // Only set timer for non-new words
+      if (!isNew) {
+        // Calculate adaptive display time based on FSRS stability
+        const displayTime = calculateDisplayTime(stability)
+        
+        console.log(`Showing word "${currentWord}" for ${displayTime}ms (stability: ${stability})`)
+        
+        // Hide word after adaptive time
+        setTimeout(() => {
+          setGameState('input')
+        }, displayTime)
+      } else {
+        console.log(`Showing new word "${currentWord}" (stability: ${stability}) - waiting for user input`)
+      }
     } else if (wordsToUse.length === 0) {
       // If no words loaded, stay in loading state
       setGameState('loading')
@@ -318,13 +341,27 @@ function GamePage({ onBackToMenu }) {
         return <Loading />
 
       case 'showing':
+        const currentWordDetail = wordDetails.find(detail => detail.hebrew === currentWord)
+        const stability = currentWordDetail?.fsrs_stability || 0.1
+        const displayTime = calculateDisplayTime(stability)
+        const isNew = isNewWord(stability)
+        
         return (
           <div className="showing-container">
-            <WordDisplay 
-              word={currentWord} 
-              instruction="Memorize this word!"
-              displayTime={calculateDisplayTime(wordDetails.find(detail => detail.hebrew === currentWord)?.fsrs_stability || 0.1)}
-            />
+            {isNew ? (
+              <NewWordCard 
+                word={currentWord}
+                english={currentWordDetail?.english || ''}
+                transliteration={currentWordDetail?.transliteration || ''}
+                onContinue={continueFromNewWord}
+              />
+            ) : (
+              <WordDisplay 
+                word={currentWord} 
+                instruction="Memorize this word!"
+                displayTime={displayTime}
+              />
+            )}
             {showReviewButton && currentWordIndex > 0 && (
               <button className="review-button" onClick={showReview}>
                 Review Last Answer

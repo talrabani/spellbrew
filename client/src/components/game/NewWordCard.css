@@ -1,0 +1,159 @@
+.new-word-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  color: #333;
+  text-align: center;
+  animation: newWordCardFadeIn 0.6s ease-in;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.new-word-header {
+  margin-bottom: 1.5rem;
+}
+
+.new-word-badge {
+  color: #8B0000;
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 1em;
+}
+
+.new-word-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.new-word-hebrew {
+  font-size: 3.5rem;
+  font-weight: bold;
+  direction: rtl;
+  text-align: center;
+  line-height: 1.2;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.new-word-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  font-size: 1rem;
+  max-width: 300px;
+}
+
+.detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  text-align: center;
+}
+
+.detail-label {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.detail-value {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #333;
+  background: #f5f5f5;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+}
+
+/* Continue Button */
+.continue-button {
+  background: #4CAF50;
+  border: none;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 0.8rem 2rem;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.continue-button:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.continue-button:active {
+  transform: translateY(0);
+}
+
+/* Animations */
+@keyframes newWordCardFadeIn {
+  0% { 
+    opacity: 0; 
+    transform: scale(0.9) translateY(20px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: scale(1) translateY(0); 
+  }
+}
+
+
+
+/* Mobile Responsive Design */
+@media (max-width: 480px) {
+  .new-word-card {
+    padding: 1.5rem;
+  }
+  
+  .new-word-hebrew {
+    font-size: 2.8rem;
+  }
+  
+  .new-word-badge {
+    font-size: 1.5rem;
+  }
+  
+  .new-word-details {
+    font-size: 0.9rem;
+  }
+  
+  .detail-value {
+    font-size: 1rem;
+    padding: 0.3rem 0.6rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .new-word-card {
+    padding: 1rem;
+  }
+  
+  .new-word-hebrew {
+    font-size: 2.4rem;
+  }
+  
+  .new-word-badge {
+    font-size: 1.3rem;
+  }
+  
+  .new-word-details {
+    font-size: 0.85rem;
+  }
+  
+  .detail-value {
+    font-size: 0.95rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
