@@ -13,24 +13,24 @@ const WORD_STAGES = {
     name: 'new',
     displayTime: null, // Unlimited time
     minSeenCount: 0,
-    maxSeenCount: 2
+    maxSeenCount: 1
   },
   LEARNING: {
     name: 'learning',
-    displayTime: 5000, // 5 seconds
-    minSeenCount: 3,
-    maxSeenCount: 9
+    displayTime: 3000, // 3 seconds
+    minSeenCount: 2,
+    maxSeenCount: 5
   },
   PRACTICING: {
     name: 'practicing',
-    displayTime: 3000, // 3 seconds
-    minSeenCount: 10,
-    maxSeenCount: 24
+    displayTime: 1000, // 1 second
+    minSeenCount: 6,
+    maxSeenCount: 15
   },
   KNOWN: {
     name: 'known',
-    displayTime: 1500, // 1.5 seconds
-    minSeenCount: 25,
+    displayTime: 200, // 0.2 seconds
+    minSeenCount: 16,
     maxSeenCount: null
   }
 };
@@ -96,6 +96,39 @@ function getWordStage(timesSeen) {
 }
 
 /**
+ * Calculate dynamic display time based on word stage and additional factors
+ * @param {number} timesSeen - Number of times user has seen the word
+ * @param {number} timesWrong - Number of times user got it wrong
+ * @param {number} baseDisplayTime - Base display time from word stage
+ * @returns {number|null} Dynamic display time in milliseconds, or null for unlimited
+ */
+function calculateDynamicDisplayTime(timesSeen, timesWrong, baseDisplayTime) {
+  // If base display time is null (unlimited), keep it unlimited
+  if (baseDisplayTime === null) return null;
+  
+  // Calculate error rate
+  const errorRate = timesSeen > 0 ? timesWrong / timesSeen : 0;
+  
+  // Start with base display time
+  let dynamicTime = baseDisplayTime;
+  
+  // Reduce time based on times seen (more practice = faster)
+  if (timesSeen > 0) {
+    const seenBonus = Math.min(timesSeen * 0.1, 0.5); // Up to 50% reduction
+    dynamicTime *= (1 - seenBonus);
+  }
+  
+  // Reduce time based on low error rate (better performance = faster)
+  if (errorRate < 0.3) {
+    const performanceBonus = (0.3 - errorRate) * 0.4; // Up to 40% reduction
+    dynamicTime *= (1 - performanceBonus);
+  }
+  
+  // Ensure minimum display time of 200ms (0.2 seconds)
+  return Math.max(200, Math.round(dynamicTime));
+}
+
+/**
  * Calculate overall priority score for word selection
  * @param {Object} word - Word object with progress data
  * @returns {Object} Priority calculation result
@@ -109,6 +142,9 @@ function calculateWordPriority(word) {
   const difficulty = calculateWordDifficulty(timesWrong, timesSeen);
   const timePriority = calculateTimePriority(lastSeen);
   const wordStage = getWordStage(timesSeen);
+  
+  // Calculate dynamic display time
+  const dynamicDisplayTime = calculateDynamicDisplayTime(timesSeen, timesWrong, wordStage.displayTime);
   
   // Weight the factors
   const difficultyWeight = 0.4;  // 40% weight
@@ -129,7 +165,7 @@ function calculateWordPriority(word) {
     difficulty,
     timePriority: Math.round(timePriority),
     wordStage: wordStage.name,
-    displayTime: wordStage.displayTime,
+    displayTime: dynamicDisplayTime,
     factors: {
       difficulty,
       timePriority: Math.round(timePriority),
@@ -239,13 +275,17 @@ function updateWordProgress(word, correct) {
   const timesSeen = (word.times_seen || 0) + 1;
   const timesWrong = (word.times_wrong || 0) + (correct ? 0 : 1);
   const lastSeen = new Date();
+  const wordStage = getWordStage(timesSeen);
+  
+  // Calculate dynamic display time for the updated progress
+  const dynamicDisplayTime = calculateDynamicDisplayTime(timesSeen, timesWrong, wordStage.displayTime);
   
   return {
     times_seen: timesSeen,
     times_wrong: timesWrong,
     last_seen: lastSeen,
-    word_stage: getWordStage(timesSeen).name,
-    display_time: getWordStage(timesSeen).displayTime
+    word_stage: wordStage.name,
+    display_time: dynamicDisplayTime
   };
 }
 
@@ -297,6 +337,7 @@ module.exports = {
   calculateWordDifficulty,
   calculateTimePriority,
   getWordStage,
+  calculateDynamicDisplayTime,
   calculateWordPriority,
   selectWordsForGame,
   updateWordProgress,
