@@ -29,36 +29,24 @@ function GamePage({ onBackToMenu }) {
     return text.trim().replace(/\s+/g, ' ')
   }
 
-  // Check if a word is new (very low FSRS stability)
-  const isNewWord = (stability) => {
-    const stabilityNum = parseFloat(stability) || 0.1
-    return stabilityNum <= 0.3
+  // Check if a word is new based on word stage
+  const isNewWord = (wordDetail) => {
+    const wordStage = wordDetail?.priority?.wordStage || 'new'
+    return wordStage === 'new'
   }
 
-  // Calculate display time for a word based on FSRS stability
-  const calculateDisplayTime = (stability) => {
-    // Convert stability to a number and clamp it
-    const stabilityNum = Math.max(0.1, Math.min(10, parseFloat(stability) || 0.1))
-    
-    // Map stability to display time:
-    // - New words (stability ~0.1): 3 seconds
-    // - Learning words (stability ~0.5): 2 seconds  
-    // - Reviewing words (stability ~1-2): 1.5 seconds
-    // - Well-known words (stability ~3-5): 1 second
-    // - Mastered words (stability ~5+): 0.2 seconds
-    if (stabilityNum <= 0.3) return 3000 // 3 seconds for very new words
-    if (stabilityNum <= 0.8) return 2000 // 2 seconds for learning words
-    if (stabilityNum <= 2.0) return 1500 // 1.5 seconds for reviewing words
-    if (stabilityNum <= 4.0) return 1000 // 1 second for well-known words
-    return 200 // 0.2 seconds for mastered words
+  // Get display time for a word based on word stage
+  const getDisplayTime = (wordDetail) => {
+    const displayTime = wordDetail?.priority?.displayTime
+    return displayTime || null // null means unlimited time
   }
 
-  // Save FSRS progress for a single word
-  const saveFSRSProgress = async (hebrew, correct) => {
+  // Save progress for a single word
+  const saveProgress = async (hebrew, correct) => {
     try {
       const token = localStorage.getItem('authToken')
       if (!token) {
-        console.error('No auth token found for FSRS progress')
+        console.error('No auth token found for progress')
         return
       }
 
@@ -68,9 +56,9 @@ function GamePage({ onBackToMenu }) {
         results: [{ hebrew, correct }]
       })
       
-      console.log(`FSRS progress saved for word: ${hebrew} (${correct ? 'correct' : 'incorrect'})`)
+      console.log(`Progress saved for word: ${hebrew} (${correct ? 'correct' : 'incorrect'})`)
     } catch (error) {
-      console.error('Error saving FSRS progress:', error)
+      console.error('Error saving progress:', error)
     }
   }
 
@@ -87,18 +75,22 @@ function GamePage({ onBackToMenu }) {
       // Set auth header
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
       
-      // First, auto-manage the user's vocabulary (add new words if needed)
-      try {
-        const autoManageResponse = await axios.post(getApiUrl('/progress/auto-manage'))
-        if (autoManageResponse.data.action === 'added_words') {
-          console.log(`Auto-added ${autoManageResponse.data.wordsAdded} new words:`, autoManageResponse.data.reason)
-        }
-      } catch (autoManageError) {
-        console.warn('Auto-manage failed, continuing with existing words:', autoManageError)
-      }
+      // First, try to fetch words without auto-managing
+      let response = await axios.get(getApiUrl('/words/user?count=20'))
       
-      // Fetch words from user's vocabulary
-      const response = await axios.get(getApiUrl('/words/user?count=20'))
+      // If we don't have enough words, then auto-manage to add more
+      if (response.data.words.length < 10) {
+        try {
+          const autoManageResponse = await axios.post(getApiUrl('/progress/auto-manage'))
+          if (autoManageResponse.data.action === 'added_words') {
+            console.log(`Auto-added ${autoManageResponse.data.wordsAdded} new words:`, autoManageResponse.data.reason)
+            // Fetch words again after auto-managing
+            response = await axios.get(getApiUrl('/words/user?count=20'))
+          }
+        } catch (autoManageError) {
+          console.warn('Auto-manage failed, continuing with existing words:', autoManageError)
+        }
+      }
       const fetchedWords = response.data.words
       const fetchedDetails = response.data.details
       
@@ -158,24 +150,21 @@ function GamePage({ onBackToMenu }) {
         setCurrentWord(firstWord)
         setGameState('showing')
         
-        // Get the word details to find FSRS stability
+        // Get the word details to find word stage and display time
         const firstWordDetail = result.details.find(detail => detail.hebrew === firstWord)
-        const stability = firstWordDetail?.fsrs_stability || 0.1
-        const isNew = isNewWord(stability)
+        const isNew = isNewWord(firstWordDetail)
+        const displayTime = getDisplayTime(firstWordDetail)
         
         // Only set timer for non-new words
-        if (!isNew) {
-          // Calculate adaptive display time based on FSRS stability
-          const displayTime = calculateDisplayTime(stability)
+        if (!isNew && displayTime !== null) {
+          console.log(`Showing first word "${firstWord}" for ${displayTime}ms (stage: ${firstWordDetail?.priority?.wordStage}, new: ${isNew})`)
           
-          console.log(`Showing first word "${firstWord}" for ${displayTime}ms (stability: ${stability}, new: ${isNew})`)
-          
-          // Hide word after adaptive time
+          // Hide word after display time
           setTimeout(() => {
             setGameState('input')
           }, displayTime)
         } else {
-          console.log(`Showing first word "${firstWord}" (stability: ${stability}, new: ${isNew}) - waiting for user input`)
+          console.log(`Showing first word "${firstWord}" (stage: ${firstWordDetail?.priority?.wordStage}, new: ${isNew}) - waiting for user input`)
         }
       } else {
         console.log('Failed to load words, going back to menu')
@@ -199,24 +188,21 @@ function GamePage({ onBackToMenu }) {
       setCurrentWord(currentWord)
       setGameState('showing')
       
-      // Get the word details to find FSRS stability
+      // Get the word details to find word stage and display time
       const currentWordDetail = wordDetails.find(detail => detail.hebrew === currentWord)
-      const stability = currentWordDetail?.fsrs_stability || 0.1
-      const isNew = isNewWord(stability)
+      const isNew = isNewWord(currentWordDetail)
+      const displayTime = getDisplayTime(currentWordDetail)
       
       // Only set timer for non-new words
-      if (!isNew) {
-        // Calculate adaptive display time based on FSRS stability
-        const displayTime = calculateDisplayTime(stability)
+      if (!isNew && displayTime !== null) {
+        console.log(`Showing word "${currentWord}" for ${displayTime}ms (stage: ${currentWordDetail?.priority?.wordStage})`)
         
-        console.log(`Showing word "${currentWord}" for ${displayTime}ms (stability: ${stability})`)
-        
-        // Hide word after adaptive time
+        // Hide word after display time
         setTimeout(() => {
           setGameState('input')
         }, displayTime)
       } else {
-        console.log(`Showing new word "${currentWord}" (stability: ${stability}) - waiting for user input`)
+        console.log(`Showing new word "${currentWord}" (stage: ${currentWordDetail?.priority?.wordStage}) - waiting for user input`)
       }
     } else if (wordsToUse.length === 0) {
       // If no words loaded, stay in loading state
@@ -241,8 +227,8 @@ function GamePage({ onBackToMenu }) {
     // Track result for FSRS progress
     setGameResults(prev => [...prev, { hebrew: currentWord, correct }])
     
-    // Save FSRS progress immediately after each word
-    saveFSRSProgress(currentWord, correct)
+          // Save progress immediately after each word
+          saveProgress(currentWord, correct)
     
     if (correct) {
       setScore(score + 10)
@@ -342,9 +328,8 @@ function GamePage({ onBackToMenu }) {
 
       case 'showing':
         const currentWordDetail = wordDetails.find(detail => detail.hebrew === currentWord)
-        const stability = currentWordDetail?.fsrs_stability || 0.1
-        const displayTime = calculateDisplayTime(stability)
-        const isNew = isNewWord(stability)
+        const displayTime = getDisplayTime(currentWordDetail)
+        const isNew = isNewWord(currentWordDetail)
         
         return (
           <div className="showing-container">

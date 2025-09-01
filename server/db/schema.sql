@@ -25,19 +25,15 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- User-specific vocabulary progress table
--- Tracks FSRS (Free Spaced Repetition Scheduler) parameters for each vocabulary word
+-- Tracks simple learning progress for each vocabulary word
 CREATE TABLE IF NOT EXISTS user_vocabulary_progress (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     vocabulary_id INTEGER NOT NULL REFERENCES vocabulary(id) ON DELETE CASCADE,
-    fsrs_stability DECIMAL(10,4) DEFAULT 0.1,      -- How well the word is learned (increases with successful reviews)
-    fsrs_difficulty DECIMAL(10,4) DEFAULT 5.0,     -- How hard the word is for the user (personalized)
-    fsrs_retrievability DECIMAL(10,4) DEFAULT 0.0, -- Current likelihood of remembering (0-1 scale)
-    fsrs_last_review TIMESTAMP,                    -- When the word was last reviewed
-    fsrs_next_review TIMESTAMP,                    -- When the word should be reviewed next
-    fsrs_review_count INTEGER DEFAULT 0,           -- Total number of reviews
     times_seen INTEGER DEFAULT 0,                  -- How many times the user has seen this word
     times_wrong INTEGER DEFAULT 0,                 -- How many times the user got this word wrong
+    word_stage VARCHAR(20) DEFAULT 'new',          -- Current learning stage (new, learning, practicing, known)
+    display_time INTEGER,                          -- Display time in milliseconds (null for unlimited)
     first_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_seen TIMESTAMP,
     UNIQUE (user_id, vocabulary_id)
@@ -50,6 +46,6 @@ CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_uvp_user_id ON user_vocabulary_progress(user_id);
 CREATE INDEX IF NOT EXISTS idx_uvp_vocab_id ON user_vocabulary_progress(vocabulary_id);
-CREATE INDEX IF NOT EXISTS idx_uvp_fsrs_stability ON user_vocabulary_progress(fsrs_stability);
-CREATE INDEX IF NOT EXISTS idx_uvp_fsrs_next_review ON user_vocabulary_progress(fsrs_next_review);
-CREATE INDEX IF NOT EXISTS idx_uvp_fsrs_retrievability ON user_vocabulary_progress(fsrs_retrievability);
+CREATE INDEX IF NOT EXISTS idx_uvp_word_stage ON user_vocabulary_progress(word_stage);
+CREATE INDEX IF NOT EXISTS idx_uvp_last_seen ON user_vocabulary_progress(last_seen);
+CREATE INDEX IF NOT EXISTS idx_uvp_times_seen ON user_vocabulary_progress(times_seen);

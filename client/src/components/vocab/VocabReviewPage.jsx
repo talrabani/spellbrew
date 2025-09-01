@@ -12,9 +12,9 @@ function VocabReviewPage({ onBackToHome }) {
 
   // Sort / Filter state
   const [panelOpen, setPanelOpen] = useState(false)
-  const [sortBy, setSortBy] = useState('progress') // progress | stability | difficulty | retrievability | reviews | alpha | seen | wrong | last_seen | next_review
+  const [sortBy, setSortBy] = useState('progress') // progress | difficulty | priority_score | alpha | seen | wrong | last_seen | word_stage
   const [sortDir, setSortDir] = useState('asc') // asc | desc
-  const [filterProgress, setFilterProgress] = useState('all') // all | learning | reviewing | mastered
+  const [filterProgress, setFilterProgress] = useState('all') // all | new | learning | practicing | known
   const [filterNewWithinHours, setFilterNewWithinHours] = useState(null) // e.g., 24
 
   const fetchProgress = async () => {
@@ -63,10 +63,10 @@ function VocabReviewPage({ onBackToHome }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortBy, sortDir, filterProgress, filterNewWithinHours])
 
-  const getProgressColor = (progressPercentage, learningStatus) => {
-    if (learningStatus === 'mastered') return '#48bb78' // Green - mastered
-    if (learningStatus === 'reviewing') return '#ed8936' // Orange - reviewing
-    if (learningStatus === 'learning') return '#ecc94b' // Yellow - learning
+  const getProgressColor = (progressPercentage, wordStage) => {
+    if (wordStage === 'known') return '#48bb78' // Green - known
+    if (wordStage === 'practicing') return '#ed8936' // Orange - practicing
+    if (wordStage === 'learning') return '#ecc94b' // Yellow - learning
     return '#e53e3e' // Red - new
   }
 
@@ -121,20 +121,20 @@ function VocabReviewPage({ onBackToHome }) {
                 <span className="stat-value">{progress.length}</span>
               </div>
               <div className="stat-item">
-                <span className="stat-label">Mastered:</span>
-                <span className="stat-value">{progress.filter(p => p.learning_status === 'mastered').length}</span>
+                <span className="stat-label">Known:</span>
+                <span className="stat-value">{progress.filter(p => p.word_stage === 'known').length}</span>
               </div>
               <div className="stat-item">
-                <span className="stat-label">Reviewing:</span>
-                <span className="stat-value">{progress.filter(p => p.learning_status === 'reviewing').length}</span>
+                <span className="stat-label">Practicing:</span>
+                <span className="stat-value">{progress.filter(p => p.word_stage === 'practicing').length}</span>
               </div>
               <div className="stat-item">
                 <span className="stat-label">Learning:</span>
-                <span className="stat-value">{progress.filter(p => p.learning_status === 'learning').length}</span>
+                <span className="stat-value">{progress.filter(p => p.word_stage === 'learning').length}</span>
               </div>
               <div className="stat-item">
                 <span className="stat-label">New:</span>
-                <span className="stat-value">{progress.filter(p => p.learning_status === 'new').length}</span>
+                <span className="stat-value">{progress.filter(p => p.word_stage === 'new').length}</span>
               </div>
             </div>
 
@@ -148,21 +148,17 @@ function VocabReviewPage({ onBackToHome }) {
                     <div className="filter-title">Sort by</div>
                     <div className="filter-row">
                       <label><input type="radio" name="sortBy" checked={sortBy==='progress'} onChange={() => setSortBy('progress')} /> Progress</label>
-                      <label><input type="radio" name="sortBy" checked={sortBy==='stability'} onChange={() => setSortBy('stability')} /> Stability</label>
                       <label><input type="radio" name="sortBy" checked={sortBy==='difficulty'} onChange={() => setSortBy('difficulty')} /> Difficulty</label>
+                      <label><input type="radio" name="sortBy" checked={sortBy==='priority_score'} onChange={() => setSortBy('priority_score')} /> Priority</label>
                     </div>
                     <div className="filter-row">
-                      <label><input type="radio" name="sortBy" checked={sortBy==='retrievability'} onChange={() => setSortBy('retrievability')} /> Retrievability</label>
-                      <label><input type="radio" name="sortBy" checked={sortBy==='reviews'} onChange={() => setSortBy('reviews')} /> Reviews</label>
                       <label><input type="radio" name="sortBy" checked={sortBy==='alpha'} onChange={() => setSortBy('alpha')} /> Alphabetically</label>
-                    </div>
-                    <div className="filter-row">
                       <label><input type="radio" name="sortBy" checked={sortBy==='seen'} onChange={() => setSortBy('seen')} /> Times seen</label>
-                      <label><input type="radio" name="sortBy" checked={sortBy==='wrong'} onChange={() => setSortBy('wrong')} /> Wrong</label>
-                      <label><input type="radio" name="sortBy" checked={sortBy==='last_seen'} onChange={() => setSortBy('last_seen')} /> Last Seen</label>
+                      <label><input type="radio" name="sortBy" checked={sortBy==='wrong'} onChange={() => setSortBy('wrong')} /> Times wrong</label>
                     </div>
                     <div className="filter-row">
-                      <label><input type="radio" name="sortBy" checked={sortBy==='next_review'} onChange={() => setSortBy('next_review')} /> Next Review</label>
+                      <label><input type="radio" name="sortBy" checked={sortBy==='last_seen'} onChange={() => setSortBy('last_seen')} /> Last Seen</label>
+                      <label><input type="radio" name="sortBy" checked={sortBy==='word_stage'} onChange={() => setSortBy('word_stage')} /> Word Stage</label>
                       <label className="dir-label">Direction:
                         <select value={sortDir} onChange={(e)=>setSortDir(e.target.value)}>
                           <option value="asc">Ascending</option>
@@ -176,11 +172,12 @@ function VocabReviewPage({ onBackToHome }) {
                     <div className="filter-title">Filter</div>
                     <div className="filter-row">
                       <label><input type="radio" name="progressFilter" checked={filterProgress==='all'} onChange={() => setFilterProgress('all')} /> All</label>
+                      <label><input type="radio" name="progressFilter" checked={filterProgress==='new'} onChange={() => setFilterProgress('new')} /> New</label>
                       <label><input type="radio" name="progressFilter" checked={filterProgress==='learning'} onChange={() => setFilterProgress('learning')} /> Learning</label>
-                      <label><input type="radio" name="progressFilter" checked={filterProgress==='reviewing'} onChange={() => setFilterProgress('reviewing')} /> Reviewing</label>
-                      <label><input type="radio" name="progressFilter" checked={filterProgress==='mastered'} onChange={() => setFilterProgress('mastered')} /> Mastered</label>
                     </div>
                     <div className="filter-row">
+                      <label><input type="radio" name="progressFilter" checked={filterProgress==='practicing'} onChange={() => setFilterProgress('practicing')} /> Practicing</label>
+                      <label><input type="radio" name="progressFilter" checked={filterProgress==='known'} onChange={() => setFilterProgress('known')} /> Known</label>
                       <label className="dir-label">New Words (hours):
                         <input 
                           type="number" 
@@ -226,35 +223,45 @@ function VocabReviewPage({ onBackToHome }) {
                           <div className="progress-indicator">
                             <span 
                               className="progress-dot" 
-                              style={{ backgroundColor: getProgressColor(word.progress_percentage || 0, word.learning_status || 'new') }}
+                              style={{ backgroundColor: getProgressColor(word.progress_percentage || 0, word.word_stage || 'new') }}
                             ></span>
                             <span className="progress-text">{getProgressText(word.progress_percentage || 0)}</span>
                           </div>
                           {hoveredWord?.id === word.id && (
                             <div className="word-details">
                               <div className="detail-item">
-                                <span className="detail-label">Stability:</span>
+                                <span className="detail-label">Word Stage:</span>
                                 <span className="detail-value">
-                                  {typeof word.fsrs_stability === 'number' ? word.fsrs_stability.toFixed(2) : '0.10'}
+                                  {word.word_stage || 'new'}
                                 </span>
                               </div>
                               <div className="detail-item">
-                                <span className="detail-label">Difficulty:</span>
+                                <span className="detail-label">Difficulty Score:</span>
                                 <span className="detail-value">
-                                  {typeof word.fsrs_difficulty === 'number' ? word.fsrs_difficulty.toFixed(2) : '5.00'}
+                                  {typeof word.difficulty === 'number' ? word.difficulty.toFixed(1) : '50.0'}
                                 </span>
                               </div>
                               <div className="detail-item">
-                                <span className="detail-label">Reviews:</span>
-                                <span className="detail-value">{word.fsrs_review_count || 0}</span>
+                                <span className="detail-label">Priority Score:</span>
+                                <span className="detail-value">
+                                  {typeof word.priority_score === 'number' ? word.priority_score.toFixed(1) : '0.0'}
+                                </span>
                               </div>
                               <div className="detail-item">
-                                <span className="detail-label">Seen:</span>
+                                <span className="detail-label">Times Seen:</span>
                                 <span className="detail-value">{word.times_seen || 0}</span>
                               </div>
                               <div className="detail-item">
-                                <span className="detail-label">Wrong:</span>
+                                <span className="detail-label">Times Wrong:</span>
                                 <span className="detail-value">{word.times_wrong || 0}</span>
+                              </div>
+                              <div className="detail-item">
+                                <span className="detail-label">Error Rate:</span>
+                                <span className="detail-value">
+                                  {word.times_seen > 0 
+                                    ? `${((word.times_wrong / word.times_seen) * 100).toFixed(1)}%` 
+                                    : '0%'}
+                                </span>
                               </div>
                               <div className="detail-item">
                                 <span className="detail-label">Last Seen:</span>
@@ -262,13 +269,11 @@ function VocabReviewPage({ onBackToHome }) {
                                   {word.last_seen ? new Date(word.last_seen).toLocaleDateString() : 'Never'}
                                 </span>
                               </div>
-                              {word.fsrs_next_review && (
+                              {word.display_time && (
                                 <div className="detail-item">
-                                  <span className="detail-label">Next Review:</span>
+                                  <span className="detail-label">Display Time:</span>
                                   <span className="detail-value">
-                                    {word.days_until_next_review > 0 
-                                      ? `${word.days_until_next_review} days` 
-                                      : 'Due now'}
+                                    {word.display_time === null ? 'Unlimited' : `${word.display_time / 1000}s`}
                                   </span>
                                 </div>
                               )}
