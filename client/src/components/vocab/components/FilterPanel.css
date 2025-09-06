@@ -1,0 +1,157 @@
+/* Filter Panel */
+.filter-panel {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  animation: slideDown 0.3s ease-out;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.filter-section {
+  margin-bottom: 1rem;
+}
+
+.filter-section:last-child {
+  margin-bottom: 0;
+}
+
+.filter-section-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.25rem;
+}
+
+.filter-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.filter-group {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  cursor: pointer;
+  padding: 0.375rem 0.5rem;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  min-height: 32px;
+}
+
+.radio-option:hover {
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.radio-option input[type="radio"] {
+  margin: 0;
+  accent-color: #667eea;
+  width: 14px;
+  height: 14px;
+}
+
+.radio-label {
+  font-size: 0.85rem;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.sort-direction {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.sort-direction:hover {
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.direction-label {
+  font-size: 0.85rem;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.sort-direction select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  background: white;
+  height: 28px;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .filter-panel {
+    padding: 0.75rem;
+    max-height: 60vh;
+  }
+
+  .filter-section {
+    margin-bottom: 0.75rem;
+  }
+
+  .filter-section-title {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .filter-options {
+    gap: 0.5rem;
+  }
+
+  .filter-group {
+    gap: 0.5rem;
+  }
+
+  .radio-option {
+    padding: 0.25rem 0.375rem;
+    min-height: 28px;
+  }
+
+  .radio-label {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .filter-panel {
+    padding: 0.75rem;
+    max-height: 50vh;
+  }
+
+  .filter-group {
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .sort-direction select {
+    height: 26px;
+  }
+}

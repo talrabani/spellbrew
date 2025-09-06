@@ -1,0 +1,209 @@
+/* Table Container */
+.table-container {
+  flex: 1;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-scroll-wrapper {
+  flex: 1;
+  overflow: auto;
+  max-height: calc(100vh - 350px);
+  max-height: calc(100dvh - 350px); /* Dynamic viewport height */
+  max-height: calc(100svh - 350px); /* Small viewport height fallback */
+}
+
+.vocab-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  table-layout: fixed;
+}
+
+.table-header {
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.table-header th {
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+  padding: 1rem 0.75rem;
+  text-align: left;
+  border-bottom: 2px solid #e2e8f0;
+  font-size: 0.9rem;
+}
+
+.table-body {
+  background: white;
+}
+
+.table-row {
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.table-row:hover,
+.table-row.hovered {
+  background: linear-gradient(90deg, #f8fafc 0%, #ffffff 100%);
+  transform: translateX(2px);
+}
+
+.hebrew-cell,
+.english-cell,
+.progress-cell {
+  padding: 1rem 0.75rem;
+  vertical-align: middle;
+}
+
+.hebrew-header {
+  width: 35%;
+}
+
+.english-header {
+  width: 45%;
+}
+
+.progress-header {
+  width: 20%;
+}
+
+.hebrew-cell {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.hebrew-text {
+  font-family: 'Arial', 'Noto Sans Hebrew', 'David', sans-serif;
+  direction: rtl;
+  font-size: 1rem;
+}
+
+.english-cell {
+  color: #4a5568;
+}
+
+.english-text {
+  font-size: 0.95rem;
+}
+
+.progress-cell {
+  position: relative;
+}
+
+.progress-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.progress-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4a5568;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .table-scroll-wrapper {
+    max-height: calc(100vh - 280px);
+    max-height: calc(100dvh - 280px); /* Dynamic viewport height */
+    max-height: calc(100svh - 280px); /* Small viewport height fallback */
+  }
+
+  .hebrew-header {
+    width: 40%;
+  }
+
+  .english-header {
+    width: 40%;
+  }
+
+  .progress-header {
+    width: 20%;
+  }
+
+  .hebrew-cell,
+  .english-cell,
+  .progress-cell {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .hebrew-text,
+  .english-text {
+    font-size: 0.9rem;
+  }
+
+  .progress-text {
+    font-size: 0.85rem;
+  }
+
+  .progress-indicator {
+    gap: 0.5rem;
+  }
+
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .table-scroll-wrapper {
+    max-height: calc(100vh - 250px);
+    max-height: calc(100dvh - 250px); /* Dynamic viewport height */
+    max-height: calc(100svh - 250px); /* Small viewport height fallback */
+  }
+
+  .vocab-table th,
+  .vocab-table td {
+    padding: 0.5rem 0.4rem;
+    font-size: 0.85rem;
+  }
+
+  .hebrew-header {
+    width: 35%;
+  }
+
+  .english-header {
+    width: 45%;
+  }
+
+  .progress-header {
+    width: 20%;
+  }
+
+  .progress-indicator {
+    gap: 0.5rem;
+  }
+
+  .progress-dot {
+    width: 12px;
+    height: 12px;
+  }
+
+  .progress-text {
+    font-size: 0.8rem;
+  }
+
+  .hebrew-text,
+  .english-text {
+    font-size: 0.85rem;
+  }
+}
