@@ -13,10 +13,31 @@ function FilterPanel({
 
   return (
     <div className="filter-panel">
-      <div className="filter-section">
-        <h3 className="filter-section-title">Sort by</h3>
-        <div className="filter-options">
-          <div className="filter-group">
+      {/* Direction Selector at Top */}
+      <div className="filter-top-section">
+        <div className="sort-direction">
+          <span className="direction-label">Direction:</span>
+          <button
+            className="direction-toggle"
+            onClick={() => onSortDirChange(sortDir === 'asc' ? 'desc' : 'asc')}
+            aria-label={`Sort ${sortDir === 'asc' ? 'descending' : 'ascending'}`}
+          >
+            <span className="direction-text">
+              {sortDir === 'asc' ? 'Ascending' : 'Descending'}
+            </span>
+            <span className={`direction-arrow ${sortDir === 'asc' ? 'up' : 'down'}`}>
+              {sortDir === 'asc' ? '↑' : '↓'}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content - Sort Left, Filter Right */}
+      <div className="filter-main-content">
+        {/* Left Side - Sorting Options */}
+        <div className="filter-left">
+          <h4 className="filter-column-title">Sort by</h4>
+          <div className="sort-options-list">
             <label className="radio-option">
               <input
                 type="radio"
@@ -39,30 +60,10 @@ function FilterPanel({
               <input
                 type="radio"
                 name="sortBy"
-                checked={sortBy === 'priority_score'}
-                onChange={() => onSortByChange('priority_score')}
-              />
-              <span className="radio-label">Priority</span>
-            </label>
-          </div>
-          <div className="filter-group">
-            <label className="radio-option">
-              <input
-                type="radio"
-                name="sortBy"
                 checked={sortBy === 'alpha'}
                 onChange={() => onSortByChange('alpha')}
               />
               <span className="radio-label">Alphabetical</span>
-            </label>
-            <label className="radio-option">
-              <input
-                type="radio"
-                name="sortBy"
-                checked={sortBy === 'seen'}
-                onChange={() => onSortByChange('seen')}
-              />
-              <span className="radio-label">Times Seen</span>
             </label>
             <label className="radio-option">
               <input
@@ -73,8 +74,6 @@ function FilterPanel({
               />
               <span className="radio-label">Times Wrong</span>
             </label>
-          </div>
-          <div className="filter-group">
             <label className="radio-option">
               <input
                 type="radio"
@@ -84,30 +83,13 @@ function FilterPanel({
               />
               <span className="radio-label">Last Seen</span>
             </label>
-            <label className="radio-option">
-              <input
-                type="radio"
-                name="sortBy"
-                checked={sortBy === 'word_stage'}
-                onChange={() => onSortByChange('word_stage')}
-              />
-              <span className="radio-label">Word Stage</span>
-            </label>
-            <div className="sort-direction">
-              <span className="direction-label">Direction:</span>
-              <select value={sortDir} onChange={(e) => onSortDirChange(e.target.value)}>
-                <option value="asc">Ascending</option>
-                <option value="desc">Descending</option>
-              </select>
-            </div>
           </div>
         </div>
-      </div>
 
-      <div className="filter-section">
-        <h3 className="filter-section-title">Filter by Progress</h3>
-        <div className="filter-options">
-          <div className="filter-group">
+        {/* Right Side - Filtering Options */}
+        <div className="filter-right">
+          <h4 className="filter-column-title">Filter by Progress</h4>
+          <div className="filter-options-list">
             <label className="radio-option">
               <input
                 type="radio"
@@ -135,8 +117,6 @@ function FilterPanel({
               />
               <span className="radio-label">Learning</span>
             </label>
-          </div>
-          <div className="filter-group">
             <label className="radio-option">
               <input
                 type="radio"
