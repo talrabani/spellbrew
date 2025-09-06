@@ -1,6 +1,6 @@
 /* Create Deck Section */
 .create-deck-section {
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
   padding: 0 1rem;
 }
 
@@ -62,7 +62,7 @@
 /* Responsive Design for Create Deck Button */
 @media (max-width: 768px) {
   .create-deck-section {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     padding: 0 0.75rem;
   }
 
@@ -79,7 +79,7 @@
 
 @media (max-width: 480px) {
   .create-deck-section {
-    margin-bottom: 0.75rem;
+    margin-bottom: 1.25rem;
     padding: 0 0.5rem;
   }
 

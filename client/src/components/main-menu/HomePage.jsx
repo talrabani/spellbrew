@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { UserBar } from './index'
 import { LoginPage, SignupPage } from '../auth'
 import { VocabReviewPage } from '../vocab'
-import DeckSelector from '../shared/DeckSelector'
+import DeckCarousel from '../shared/DeckCarousel'
 import {
   GameSelection,
   ReviewVocabSection,
@@ -81,6 +81,7 @@ function HomePage({ onStartGame }) {
 
   const handleDeckSelect = (deck) => {
     console.log('Selected deck:', deck)
+    // TODO: Store selected deck for game initialization
   }
 
   const renderContent = () => {
@@ -121,7 +122,7 @@ function HomePage({ onStartGame }) {
       <div className="page-content">
         {/* Deck Selection Section */}
         <section className="deck-selection-section">
-          <DeckSelector onDeckChange={handleDeckSelect} />
+          <DeckCarousel onDeckChange={handleDeckSelect} />
         </section>
 
         {/* Review Vocabulary Section */}

@@ -7,9 +7,9 @@ import {
   VocabularyTable,
   LoadingState,
   ErrorState,
-  EmptyState,
-  DeckSelector
+  EmptyState
 } from './components'
+import DeckCarousel from '../shared/DeckCarousel'
 import { CreateDeckSection } from '../main-menu/components'
 import './VocabReviewPage.css'
 
@@ -90,7 +90,7 @@ function VocabReviewPage({ onBackToHome }) {
             <StatsGrid progress={progress} />
 
             {/* Deck Selector */}
-            <DeckSelector onDeckChange={(deck) => console.log('Selected deck:', deck)} />
+            <DeckCarousel onDeckChange={(deck) => console.log('Selected deck:', deck)} />
 
             {/* Create New Deck Section */}
             <CreateDeckSection />

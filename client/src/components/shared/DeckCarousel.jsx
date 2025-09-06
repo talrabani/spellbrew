@@ -1,16 +1,38 @@
 import { useState, useEffect, useRef } from 'react'
-import './DeckSelector.css'
+import './DeckCarousel.css'
 
-function DeckSelector({ onDeckChange }) {
+function DeckCarousel({ onDeckChange }) {
   const [activeDeck, setActiveDeck] = useState(0)
   const containerRef = useRef(null)
-
-  // Placeholder deck data
   const decks = [
-    { id: 1, name: 'Basic Words', count: 150, color: '#667eea' },
-    { id: 2, name: 'Intermediate', count: 200, color: '#764ba2' },
-    { id: 3, name: 'Advanced', count: 180, color: '#f093fb' },
-    { id: 4, name: 'Technical', count: 120, color: '#4facfe' },
+    {
+      id: 1,
+      name: 'Default Deck',
+      count: 150,
+      color: '#667eea',
+      icon: '📚'
+    },
+    {
+      id: 2,
+      name: 'Beginner',
+      count: 120,
+      color: '#48bb78',
+      icon: '🌱'
+    },
+    {
+      id: 3,
+      name: 'Intermediate',
+      count: 200,
+      color: '#ed8936',
+      icon: '📈'
+    },
+    {
+      id: 4,
+      name: 'Advanced',
+      count: 180,
+      color: '#f56565',
+      icon: '🔥'
+    }
   ]
 
   // Handle automatic deck selection based on scroll position
@@ -80,41 +102,27 @@ function DeckSelector({ onDeckChange }) {
   }
 
   return (
-    <div className="deck-selector">
-      <h3 className="deck-title">Vocabulary Decks</h3>
-      <div className="deck-carousel">
-        <div className="deck-container" ref={containerRef}>
-          {decks.map((deck, index) => (
-            <div
-              key={deck.id}
-              className={`deck-card ${index === activeDeck ? 'active' : ''}`}
-              onClick={() => handleDeckClick(index)}
-              style={{
-                '--deck-color': deck.color,
-                '--deck-index': index - activeDeck
-              }}
-            >
-              <div className="deck-icon">📚</div>
-              <div className="deck-info">
-                <h4 className="deck-name">{deck.name}</h4>
-                <span className="deck-count">{deck.count} words</span>
-              </div>
+    <div className="deck-carousel">
+      <div className="deck-container" ref={containerRef}>
+        {decks.map((deck, index) => (
+          <div
+            key={deck.id}
+            className={`deck-card ${index === activeDeck ? 'active' : ''}`}
+            onClick={() => handleDeckClick(index)}
+            style={{
+              '--deck-color': deck.color
+            }}
+          >
+            <div className="deck-icon">{deck.icon}</div>
+            <div className="deck-info">
+              <h4 className="deck-name">{deck.name}</h4>
+              <span className="deck-count">{deck.count} words</span>
             </div>
-          ))}
-        </div>
-        <div className="deck-indicators">
-          {decks.map((_, index) => (
-            <button
-              key={index}
-              className={`deck-indicator ${index === activeDeck ? 'active' : ''}`}
-              onClick={() => handleDeckClick(index)}
-              aria-label={`Select deck ${index + 1}`}
-            />
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </div>
   )
 }
 
-export default DeckSelector
+export default DeckCarousel
