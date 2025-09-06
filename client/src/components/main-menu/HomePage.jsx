@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react'
-import { UserBar, ReviewVocabButton } from './index'
+import { UserBar } from './index'
 import { LoginPage, SignupPage } from '../auth'
 import { VocabReviewPage } from '../vocab'
+import DeckSelector from '../shared/DeckSelector'
+import {
+  GameSelection,
+  ReviewVocabSection,
+  StartGameSection,
+  CreateDeckSection
+} from './components'
 import './HomePage.css'
 import axios from 'axios'
 import { getApiUrl } from '../../config'
@@ -9,6 +16,7 @@ import { getApiUrl } from '../../config'
 function HomePage({ onStartGame }) {
   const [currentPage, setCurrentPage] = useState('home') // 'home', 'login', 'signup', 'review'
   const [user, setUser] = useState(null)
+  const [selectedGame, setSelectedGame] = useState('speed-test')
 
 
 
@@ -63,7 +71,16 @@ function HomePage({ onStartGame }) {
       setCurrentPage('login')
       return
     }
+    // TODO: Pass selected game type and deck to game when implemented
     onStartGame()
+  }
+
+  const handleGameSelect = (gameType) => {
+    setSelectedGame(gameType)
+  }
+
+  const handleDeckSelect = (deck) => {
+    console.log('Selected deck:', deck)
   }
 
   const renderContent = () => {
@@ -89,26 +106,44 @@ function HomePage({ onStartGame }) {
           />
         )
       default:
-        return (
-          <div className="home-page">
-            <div className="home-container">      
-              <UserBar 
-                onNavigateToLogin={handleNavigateToLogin}
-                onNavigateToSignup={handleNavigateToSignup}
-                onUserChange={setUser}
-              />
-              <div className="main-menu">
-                <h1 className="game-title">Spellbrew</h1>
-                <p className="game-subtitle">Hebrew Speed Spelling Challenge</p>
-                <p className="game-description">Test how many Hebrew words you can spell per minute!</p>
-                <button className="play-button" onClick={handleStartGame}>
-                  {user ? 'Start Speed Test' : 'Please log in or make an account to play'}
-                </button>
-              </div>
-              <ReviewVocabButton onNavigateToReview={handleNavigateToReview} />
-            </div>
-          </div>
-        )
+  return (
+    <div className="home-page">
+      {/* Header */}
+      <header className="page-header">
+        <h1 className="app-title">Spellbrew</h1>
+        <UserBar
+          onNavigateToLogin={handleNavigateToLogin}
+          onNavigateToSignup={handleNavigateToSignup}
+          onUserChange={setUser}
+        />
+      </header>
+
+      <div className="page-content">
+        {/* Deck Selection Section */}
+        <section className="deck-selection-section">
+          <DeckSelector onDeckChange={handleDeckSelect} />
+        </section>
+
+        {/* Review Vocabulary Section */}
+        <ReviewVocabSection onNavigateToReview={handleNavigateToReview} />
+
+        {/* Create New Deck Section */}
+        <CreateDeckSection />
+
+        {/* Game Selection Section */}
+        <GameSelection
+          selectedGame={selectedGame}
+          onGameSelect={handleGameSelect}
+        />
+
+        {/* Start Game Section */}
+        <StartGameSection
+          onStartGame={handleStartGame}
+          user={user}
+        />
+      </div>
+    </div>
+  )
     }
   }
 

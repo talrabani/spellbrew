@@ -10,6 +10,7 @@ import {
   EmptyState,
   DeckSelector
 } from './components'
+import { CreateDeckSection } from '../main-menu/components'
 import './VocabReviewPage.css'
 
 function VocabReviewPage({ onBackToHome }) {
@@ -90,6 +91,9 @@ function VocabReviewPage({ onBackToHome }) {
 
             {/* Deck Selector */}
             <DeckSelector onDeckChange={(deck) => console.log('Selected deck:', deck)} />
+
+            {/* Create New Deck Section */}
+            <CreateDeckSection />
 
             {/* Controls Section */}
             <section className="controls-section">
