@@ -1,72 +1,93 @@
-/* Word Details Tooltip */
-.word-details-tooltip {
+/* Word Tooltip */
+.word-tooltip {
   position: absolute;
   top: 100%;
   right: 0;
   background: white;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 0;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   z-index: 100;
-  margin-top: 0.5rem;
-  animation: slideDown 0.2s ease-out;
-  min-width: 200px;
-  max-width: 280px;
+  margin-top: 0.25rem;
+  animation: slideDown 0.15s ease-out;
+  min-width: 180px;
+  max-width: 220px;
   overflow: hidden;
 }
 
 .tooltip-header {
-  background: #f8fafc;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.tooltip-title {
+.tooltip-hebrew {
   font-weight: 600;
   color: #2d3748;
-  font-size: 1rem;
+  font-size: 0.9rem;
   direction: rtl;
   font-family: 'Arial', 'Noto Sans Hebrew', 'David', sans-serif;
 }
 
-.tooltip-content {
-  padding: 0.75rem 1rem;
-  max-height: 300px;
-  overflow-y: auto;
+.tooltip-stage {
+  font-size: 0.7rem;
+  color: #667eea;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: rgba(102, 126, 234, 0.1);
+  padding: 0.125rem 0.375rem;
+  border-radius: 10px;
+  letter-spacing: 0.5px;
 }
 
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
+.tooltip-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
 }
 
-.detail-row:last-child {
-  margin-bottom: 0;
+.tooltip-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
 }
 
-.detail-label {
-  font-size: 0.85rem;
+.stat-label {
+  font-size: 0.7rem;
   color: #718096;
   font-weight: 500;
-  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.detail-value {
-  font-size: 0.85rem;
+.stat-value {
+  font-size: 0.8rem;
   color: #4a5568;
   font-weight: 600;
-  text-align: right;
-  word-break: break-word;
+}
+
+.tooltip-footer {
+  padding: 0.375rem 0.75rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.last-seen {
+  font-size: 0.7rem;
+  color: #718096;
+  font-weight: 500;
 }
 
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-5px);
   }
   to {
     opacity: 1;
@@ -76,18 +97,22 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .word-details-tooltip {
+  .word-tooltip {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    max-width: 90vw;
+    max-width: 85vw;
     z-index: 1000;
+  }
+
+  .tooltip-grid {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
   }
 }
 
 @media (max-width: 480px) {
-  .word-details-tooltip {
+  .word-tooltip {
     position: fixed;
     top: auto;
     bottom: 1rem;
@@ -98,7 +123,38 @@
     margin-top: 0;
   }
 
-  .tooltip-content {
-    max-height: 200px;
+  .tooltip-grid {
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    gap: 0.375rem;
+    padding: 0.5rem;
+  }
+
+  .tooltip-header {
+    padding: 0.5rem;
+  }
+
+  .tooltip-hebrew {
+    font-size: 0.85rem;
+  }
+
+  .tooltip-stage {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
+  }
+
+  .stat-value {
+    font-size: 0.75rem;
+  }
+
+  .tooltip-footer {
+    padding: 0.375rem 0.5rem;
+  }
+
+  .last-seen {
+    font-size: 0.65rem;
   }
 }

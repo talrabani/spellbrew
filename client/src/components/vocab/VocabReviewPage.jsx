@@ -7,7 +7,8 @@ import {
   VocabularyTable,
   LoadingState,
   ErrorState,
-  EmptyState
+  EmptyState,
+  DeckSelector
 } from './components'
 import './VocabReviewPage.css'
 
@@ -34,7 +35,7 @@ function VocabReviewPage({ onBackToHome }) {
       }
 
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-
+      
       // First, auto-manage the user's vocabulary (add new words if needed)
       try {
         const autoManageResponse = await axios.post(getApiUrl('/progress/auto-manage'))
@@ -44,7 +45,7 @@ function VocabReviewPage({ onBackToHome }) {
       } catch (autoManageError) {
         console.warn('Auto-manage failed, continuing with existing words:', autoManageError)
       }
-
+      
       const params = {
         sortBy,
         sortDir,
@@ -69,23 +70,29 @@ function VocabReviewPage({ onBackToHome }) {
 
   return (
     <div className="vocab-review-page">
-      <div className="vocab-review-container">
-        <header className="vocab-review-header">
+      {/* Header */}
+      <header className="page-header">
           <button className="back-button" onClick={onBackToHome} title="Back to Home">
             ←
           </button>
-          <h1 className="page-title">Your Vocabulary</h1>
-        </header>
+        <h1 className="page-title">Vocabulary Review</h1>
+      </header>
 
+      <div className="page-content">
         {loading && <LoadingState />}
 
         {error && <ErrorState error={error} />}
 
         {!loading && !error && (
           <>
+            {/* Statistics Section */}
             <StatsGrid progress={progress} />
 
-            <div className="controls-section">
+            {/* Deck Selector */}
+            <DeckSelector onDeckChange={(deck) => console.log('Selected deck:', deck)} />
+
+            {/* Controls Section */}
+            <section className="controls-section">
               <button
                 className={`filter-toggle ${panelOpen ? 'active' : ''}`}
                 onClick={() => setPanelOpen(!panelOpen)}
@@ -103,13 +110,16 @@ function VocabReviewPage({ onBackToHome }) {
                 onSortDirChange={setSortDir}
                 onFilterProgressChange={setFilterProgress}
               />
-            </div>
+            </section>
 
-            {progress.length === 0 ? (
-              <EmptyState />
-            ) : (
-              <VocabularyTable progress={progress} />
-            )}
+            {/* Main Table Section */}
+            <section className="table-section">
+              {progress.length === 0 ? (
+                <EmptyState />
+              ) : (
+                <VocabularyTable progress={progress} />
+              )}
+            </section>
           </>
         )}
       </div>
